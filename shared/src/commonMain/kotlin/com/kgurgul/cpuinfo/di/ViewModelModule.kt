@@ -16,6 +16,7 @@
 package com.kgurgul.cpuinfo.di
 
 import com.kgurgul.cpuinfo.features.HostViewModel
+import com.kgurgul.cpuinfo.features.battery.BatteryHealthViewModel
 import com.kgurgul.cpuinfo.features.applications.ApplicationsViewModel
 import com.kgurgul.cpuinfo.features.information.InfoContainerViewModel
 import com.kgurgul.cpuinfo.features.information.cpu.CpuInfoViewModel
@@ -35,6 +36,7 @@ import org.koin.dsl.module
 
 val viewModelModule = module {
     viewModelOf(::ApplicationsViewModel)
+    viewModelOf(::BatteryHealthViewModel)
     viewModelOf(::CpuInfoViewModel)
     viewModelOf(::GpuInfoViewModel)
     viewModelOf(::HardwareInfoViewModel)

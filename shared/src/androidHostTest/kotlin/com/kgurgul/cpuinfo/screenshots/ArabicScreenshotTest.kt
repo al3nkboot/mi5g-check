@@ -12,6 +12,11 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.kgurgul.cpuinfo.domain.model.ItemValue
+import com.kgurgul.cpuinfo.features.battery.BatteryHealthScreen
+import com.kgurgul.cpuinfo.features.battery.BatteryHealthViewModel
+import com.kgurgul.cpuinfo.features.battery.BatterySnapshot
+import com.kgurgul.cpuinfo.shared.battery_discharging
+import com.kgurgul.cpuinfo.shared.hardware_usb
 import com.kgurgul.cpuinfo.domain.model.RamData
 import com.kgurgul.cpuinfo.features.information.hardware.HardwareInfoScreen
 import com.kgurgul.cpuinfo.features.information.hardware.HardwareInfoViewModel
@@ -108,6 +113,28 @@ class ArabicScreenshotTest {
                 ),
             ),
             onExpandableItemClick = {},
+        )
+    }
+
+    @Test
+    fun battery() = snap("battery") {
+        BatteryHealthScreen(
+            BatteryHealthViewModel.UiState(
+                isLoading = false,
+                snapshot = BatterySnapshot(
+                    levelPercent = 80,
+                    health = Res.string.battery_good,
+                    state = Res.string.battery_discharging,
+                    chargers = emptyList(),
+                    technology = "Li-ion",
+                    voltageV = 4.12f,
+                    temperatureC = 31.5f,
+                    currentMa = -420,
+                    designMah = 5000,
+                    chargeCounterMah = 3680,
+                    cycleCount = 212,
+                ),
+            )
         )
     }
 }

@@ -38,6 +38,9 @@ import org.koin.dsl.module
 @SuppressLint("WifiManagerLeak")
 val androidModule = module {
     single { androidContext().resources }
+    single<com.kgurgul.cpuinfo.features.battery.IBatteryHealthProvider> {
+        com.kgurgul.cpuinfo.features.battery.BatteryHealthProvider(androidContext())
+    }
     single { androidContext().packageManager }
     single { androidContext().contentResolver }
     single { androidContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager }

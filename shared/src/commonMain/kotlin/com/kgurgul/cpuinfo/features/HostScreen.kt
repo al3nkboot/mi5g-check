@@ -42,6 +42,10 @@ import com.kgurgul.cpuinfo.features.processes.processesScreen
 import com.kgurgul.cpuinfo.features.settings.SettingsRoute
 import com.kgurgul.cpuinfo.features.settings.settingsScreen
 import com.kgurgul.cpuinfo.features.temperature.TemperaturesBaseRoute
+import com.kgurgul.cpuinfo.features.battery.BatteryBaseRoute
+import com.kgurgul.cpuinfo.features.battery.batteryScreen
+import com.kgurgul.cpuinfo.shared.battery
+import com.kgurgul.cpuinfo.shared.ic_battery
 import com.kgurgul.cpuinfo.features.temperature.temperaturesScreen
 import com.kgurgul.cpuinfo.shared.Res
 import com.kgurgul.cpuinfo.shared.applications
@@ -131,6 +135,7 @@ fun HostScreen(
             applicationsScreen()
             processesScreen()
             temperaturesScreen()
+            batteryScreen()
             settingsScreen(
                 onLicensesClicked = { navController.navigate(SettingsRoute.Licenses) },
                 onNavigateBackClicked = { navController.popBackStack() },
@@ -166,6 +171,13 @@ private fun buildTopLevelRoutes(isProcessesVisible: Boolean, isApplicationsVisib
                 )
             )
         }
+        add(
+            TopLevelRoute(
+                name = Res.string.battery,
+                route = BatteryBaseRoute,
+                icon = Res.drawable.ic_battery,
+            )
+        )
         add(
             TopLevelRoute(
                 name = Res.string.temp,

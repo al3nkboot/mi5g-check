@@ -4,5 +4,9 @@ Copyright 2026 midroid5G
 This product is a modified version of CPU Info by Kamil Gurgul (KG Soft),
 https://github.com/kamgurgul/cpu-info, licensed under the Apache License 2.0.
 
+Battery capacity estimation ideas (charge counter / level, mAh/uAh
+detection, sysfs and PowerProfile design capacity) are adapted from aBattery
+by abanana84, https://github.com/abanana84/abattery, Apache License 2.0.
+
 Modifications: rebranded (name, applicationId, version), Arabic translation
 and RTL enabled, non-Android targets (desktop, iOS, web/wasm, Wear OS) removed.
