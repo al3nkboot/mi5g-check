@@ -33,5 +33,6 @@ class CpuInfoApp : Application() {
         }
         AppInitializerComponent().init(this)
         AppLanguage.init(this)
+        com.kgurgul.cpuinfo.features.battery.BatteryStore.schedule(this)
     }
 }

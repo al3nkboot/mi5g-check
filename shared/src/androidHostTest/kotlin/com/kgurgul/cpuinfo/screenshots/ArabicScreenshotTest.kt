@@ -60,6 +60,12 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [35], qualifiers = "ar-rEG-ldrtl-w411dp-h891dp-night-xxhdpi")
 class ArabicScreenshotTest {
 
+    private val sampleSnapshot = BatterySnapshot(
+        levelPercent = 80, health = Res.string.battery_good, state = Res.string.battery_discharging,
+        technology = "Li-ion", voltageV = 4.12f, temperatureC = 31.5f, currentMa = -420,
+        designMah = 5000, chargeCounterMah = 3680, cycleCount = 212,
+    )
+
     @get:Rule val composeRule = createComposeRule()
 
     private fun snap(name: String, content: @Composable () -> Unit) {
@@ -149,6 +155,30 @@ class ArabicScreenshotTest {
                 ),
             )
         )
+    }
+
+    @Test
+    @Config(qualifiers = "+h1700dp")
+    fun batteryHistory() = snap("battery-history") {
+        val day = com.kgurgul.cpuinfo.features.battery.BatteryHistory.DAY_MS
+        val now = 400 * day
+        val samples = (0 until 28).map { i ->
+            com.kgurgul.cpuinfo.features.battery.BatterySample(
+                now - (27 - i) * day, 80, 95 - i / 5 - (i % 3), 190 + i, 30f + i % 5,
+            )
+        }
+        BatteryHealthScreen(
+            BatteryHealthViewModel.UiState(isLoading = false, snapshot = sampleSnapshot),
+            extras = com.kgurgul.cpuinfo.features.battery.BatteryExtras(
+                history = samples, nowMs = now, systemHealth = 93, systemHealthDate = "22 أكتوبر 2026",
+                importStatus = com.kgurgul.cpuinfo.features.battery.ImportStatus.Found(93), alertEnabled = true,
+            ),
+        )
+    }
+
+    @Test
+    fun dumpstateHelp() = snap("dumpstate-help") {
+        com.kgurgul.cpuinfo.features.battery.DumpstateHelpContent()
     }
 
     @Test

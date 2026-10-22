@@ -84,6 +84,7 @@ kotlin {
                 implementation("androidx.camera:camera-lifecycle:1.4.2")
                 implementation("androidx.camera:camera-view:1.4.2")
                 implementation("androidx.biometric:biometric:1.1.0")
+                implementation("androidx.work:work-runtime:2.10.1")
                 implementation(libs.androidx.core)
                 api(libs.androidx.core.splashscreen)
                 implementation(libs.androidx.datastore.preferences)

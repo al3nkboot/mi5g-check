@@ -65,6 +65,7 @@ import com.kgurgul.cpuinfo.shared.battery_cycle_count
 import com.kgurgul.cpuinfo.shared.battery_design_capacity
 import com.kgurgul.cpuinfo.shared.battery_estimate_note
 import com.kgurgul.cpuinfo.shared.battery_estimated_value
+import com.kgurgul.cpuinfo.shared.battery_from_system
 import com.kgurgul.cpuinfo.shared.battery_full_capacity
 import com.kgurgul.cpuinfo.shared.battery_health
 import com.kgurgul.cpuinfo.shared.battery_health_percent
@@ -99,8 +100,11 @@ fun NavGraphBuilder.batteryScreen() {
 @Composable
 fun BatteryHealthScreen(viewModel: BatteryHealthViewModel = koinViewModel()) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
-    BatteryHealthScreen(uiState = uiState)
+    BatteryHost(uiState)
 }
+
+/** Platform host: wires history storage, dumpstate import and alert settings into the screen. */
+@Composable internal expect fun BatteryHost(uiState: BatteryHealthViewModel.UiState)
 
 private fun fmt1(v: Double): String = (kotlin.math.round(v * 10) / 10.0).toString()
 
@@ -110,12 +114,18 @@ private fun fmt2(v: Double): String = (kotlin.math.round(v * 100) / 100.0).toStr
 private fun ltr(v: String): String = "\u2066$v\u2069"
 
 @Composable
-fun BatteryHealthScreen(uiState: BatteryHealthViewModel.UiState) {
+fun BatteryHealthScreen(
+    uiState: BatteryHealthViewModel.UiState,
+    extras: BatteryExtras = BatteryExtras(),
+    actions: BatteryActions = BatteryActions(),
+) {
     val s = uiState.snapshot
     val na = stringResource(Res.string.battery_not_available)
     val estimated = stringResource(Res.string.battery_estimated_value)
     val fullMah = BatteryMath.estimateFullMah(s.chargeCounterMah, s.levelPercent)
-    val healthPct = BatteryMath.healthPercent(fullMah, s.designMah)
+    val estimatedPct = BatteryMath.healthPercent(fullMah, s.designMah)
+    val healthPct = extras.systemHealth ?: estimatedPct
+    val healthLabel = if (extras.systemHealth != null) stringResource(Res.string.battery_from_system) else estimated
     val power = BatteryMath.powerW(s.currentMa, s.voltageV)
     val capacity = buildList {
         add(Triple(Icons.Outlined.BatteryStd, stringResource(Res.string.battery_design_capacity), s.designMah?.let { ltr("$it mAh") } ?: na))
@@ -150,7 +160,7 @@ fun BatteryHealthScreen(uiState: BatteryHealthViewModel.UiState) {
             item {
                 HeaderCard(
                     healthPct = healthPct,
-                    estimated = estimated,
+                    estimated = healthLabel,
                     na = na,
                     level = s.levelPercent,
                     state = s.state?.let { stringResource(it) } ?: na,
@@ -159,6 +169,9 @@ fun BatteryHealthScreen(uiState: BatteryHealthViewModel.UiState) {
             item { GroupCard(stringResource(Res.string.battery_section_capacity), capacity) }
             item { GroupCard(stringResource(Res.string.battery_section_live), live) }
             item { GroupCard(stringResource(Res.string.battery_section_info), info) }
+            item { HistoryCard(extras.history, extras.nowMs, extras.initialRange) }
+            item { SystemHealthCard(extras, actions) }
+            item { TempAlertCard(extras, actions) }
             item {
                 Text(
                     text = stringResource(Res.string.battery_estimate_note),

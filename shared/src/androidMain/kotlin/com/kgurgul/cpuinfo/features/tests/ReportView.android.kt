@@ -93,20 +93,22 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
     val context = LocalContext.current
     val locale = context.resources.configuration.locales[0]
     val snapshot = remember { BatteryHealthProvider(context.applicationContext).read() }
+    val systemHealth = remember { com.kgurgul.cpuinfo.features.battery.BatteryStore(context).systemHealth }
     val report = remember(results) {
         TestReport.from(
             results = results.toMap(),
             model = "${Build.MANUFACTURER} ${Build.MODEL}",
             androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
-            batteryHealthPercent = BatteryMath.healthPercent(
+            batteryHealthPercent = systemHealth ?: BatteryMath.healthPercent(
                 BatteryMath.estimateFullMah(snapshot.chargeCounterMah, snapshot.levelPercent), snapshot.designMah,
             ),
             date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale).format(Date()),
         )
     }
     val estimated = stringResource(Res.string.battery_estimated_value)
+    val fromSystem = stringResource(Res.string.battery_from_system)
     val healthText = listOfNotNull(
-        report.batteryHealthPercent?.let { ltr("$it%") + " ($estimated)" },
+        report.batteryHealthPercent?.let { ltr("$it%") + " (${if (systemHealth != null) fromSystem else estimated})" },
         snapshot.health?.let { stringResource(it) },
     ).joinToString(" · ").ifEmpty { stringResource(Res.string.battery_not_available) }
     val text = rememberReportText(report, healthText)
