@@ -63,7 +63,7 @@ class BatteryHealthProvider(private val context: Context) : IBatteryHealthProvid
                     }
                 },
             technology = intent?.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY)?.takeIf { it.isNotBlank() },
-            voltageV = voltageMv.takeIf { it > 0 }?.let { it / 1000f },
+            voltageV = BatteryMath.voltageV(voltageMv.toLong()) ?: readSysfsVoltage(),
             temperatureC = tempTenths?.takeIf { it != Int.MIN_VALUE }?.let { it / 10f },
             currentMa =
                 bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)?.let {
@@ -108,4 +108,12 @@ class BatteryHealthProvider(private val context: Context) : IBatteryHealthProvid
             null
         }
     }
+
+    /** Fallback when EXTRA_VOLTAGE is 0/unusable: sysfs voltage_now (µV), if readable. */
+    private fun readSysfsVoltage(): Float? =
+        listOf("battery", "bms").firstNotNullOfOrNull { dir ->
+            runCatching {
+                File("/sys/class/power_supply/$dir/voltage_now").readText().trim().toLongOrNull()
+            }.getOrNull()?.let { BatteryMath.voltageV(it) }
+        }
 }

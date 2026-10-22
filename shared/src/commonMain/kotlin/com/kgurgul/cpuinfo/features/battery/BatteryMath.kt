@@ -56,6 +56,20 @@ object BatteryMath {
         return (fullMah * 100.0 / designMah).roundToInt().takeIf { it in 30..130 }
     }
 
+    /**
+     * EXTRA_VOLTAGE should be mV, but some OEMs report volts (e.g. 4) or µV (sysfs voltage_now).
+     * Returns volts, or null when the value is missing or outside a plausible 1–25 V window.
+     */
+    fun voltageV(raw: Long): Float? {
+        if (raw <= 0L) return null
+        val v = when {
+            raw < 100L -> raw.toDouble()
+            raw > 100_000L -> raw / 1_000_000.0
+            else -> raw / 1000.0
+        }
+        return v.takeIf { it in 1.0..25.0 }?.toFloat()
+    }
+
     /** Power in watts from mA and volts (magnitude). */
     fun powerW(currentMa: Int?, voltageV: Float?): Double? {
         if (currentMa == null || voltageV == null || voltageV <= 0f) return null

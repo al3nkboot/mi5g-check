@@ -60,4 +60,14 @@ class BatteryMathTest {
         assertNull(BatteryMath.powerW(null, 4.0f))
         assertNull(BatteryMath.powerW(1500, null))
     }
+
+    @Test
+    fun voltageUnitsNormalizedAndZeroIsUnavailable() {
+        assertEquals(4.25f, BatteryMath.voltageV(4250))
+        assertEquals(4.25f, BatteryMath.voltageV(4_250_000))
+        assertEquals(4f, BatteryMath.voltageV(4))
+        assertNull(BatteryMath.voltageV(0))
+        assertNull(BatteryMath.voltageV(-1))
+        assertNull(BatteryMath.powerW(3868, BatteryMath.voltageV(0)))
+    }
 }
