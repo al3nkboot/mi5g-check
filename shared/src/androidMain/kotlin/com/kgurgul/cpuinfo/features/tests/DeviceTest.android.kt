@@ -77,12 +77,19 @@ internal actual fun DeviceTest(test: HwTest, onResult: (Boolean) -> Unit) {
         HwTest.SPEAKER -> SpeakerTest(onResult)
         HwTest.MIC -> WithPermission(Manifest.permission.RECORD_AUDIO, onResult) { MicTest(onResult) }
         HwTest.CAMERA -> WithPermission(Manifest.permission.CAMERA, onResult) { CameraTest(onResult) }
+        HwTest.SENSORS -> SensorsTest(onResult)
+        HwTest.VIBRATION -> VibrationTest(onResult)
+        HwTest.BUTTONS -> ButtonsTest(onResult)
+        HwTest.FLASHLIGHT -> FlashlightTest(onResult)
+        HwTest.CONNECTIVITY -> ConnectivityTest(onResult)
+        HwTest.FINGERPRINT -> FingerprintTest(onResult)
+        HwTest.CHARGING -> ChargingTest(onResult)
         else -> Unit
     }
 }
 
 @Composable
-private fun TestLayout(
+internal fun TestLayout(
     hint: StringResource,
     onResult: (Boolean) -> Unit,
     message: StringResource? = null,
@@ -104,7 +111,7 @@ private fun TestLayout(
 
 /** Requests [permission] only when this test is opened; on denial explains and lets the user retry or mark fail. */
 @Composable
-private fun WithPermission(permission: String, onResult: (Boolean) -> Unit, content: @Composable () -> Unit) {
+internal fun WithPermission(permission: String, onResult: (Boolean) -> Unit, content: @Composable () -> Unit) {
     val context = LocalContext.current
     var granted by remember {
         mutableStateOf(

@@ -75,4 +75,9 @@ object BatteryMath {
         if (currentMa == null || voltageV == null || voltageV <= 0f) return null
         return abs(currentMa) / 1000.0 * voltageV
     }
+
+    /** Charging above this many watts is labelled fast (estimated). */
+    const val FAST_CHARGE_W = 15.0
+
+    fun isFastCharge(watts: Double?): Boolean = watts != null && watts > FAST_CHARGE_W
 }

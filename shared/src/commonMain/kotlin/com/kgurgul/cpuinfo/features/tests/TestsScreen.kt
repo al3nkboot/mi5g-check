@@ -13,6 +13,27 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.FlashlightOn
+import androidx.compose.material.icons.outlined.Sensors
+import androidx.compose.material.icons.outlined.SmartButton
+import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.material.icons.outlined.Wifi
+import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.TextButton
+import com.kgurgul.cpuinfo.shared.test_buttons
+import com.kgurgul.cpuinfo.shared.test_charging
+import com.kgurgul.cpuinfo.shared.test_connectivity
+import com.kgurgul.cpuinfo.shared.test_fingerprint
+import com.kgurgul.cpuinfo.shared.test_flashlight
+import com.kgurgul.cpuinfo.shared.test_sensors
+import com.kgurgul.cpuinfo.shared.test_vibration
+import com.kgurgul.cpuinfo.shared.test_full
+import com.kgurgul.cpuinfo.shared.test_skip
+import com.kgurgul.cpuinfo.shared.report
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material.icons.outlined.TouchApp
@@ -107,12 +128,19 @@ enum class HwTest(val title: StringResource, val icon: ImageVector) {
     SPEAKER(Res.string.test_speaker, Icons.AutoMirrored.Outlined.VolumeUp),
     MIC(Res.string.test_mic, Icons.Outlined.Mic),
     CAMERA(Res.string.test_camera, Icons.Outlined.PhotoCamera),
+    SENSORS(Res.string.test_sensors, Icons.Outlined.Sensors),
+    VIBRATION(Res.string.test_vibration, Icons.Outlined.Vibration),
+    BUTTONS(Res.string.test_buttons, Icons.Outlined.SmartButton),
+    FLASHLIGHT(Res.string.test_flashlight, Icons.Outlined.FlashlightOn),
+    CONNECTIVITY(Res.string.test_connectivity, Icons.Outlined.Wifi),
+    FINGERPRINT(Res.string.test_fingerprint, Icons.Outlined.Fingerprint),
+    CHARGING(Res.string.test_charging, Icons.Outlined.BatteryChargingFull),
 }
 
 private val PassGreen = Color(0xFF43A047)
 
 @Composable
-private fun TestsSummary(passed: Int, total: Int, done: Int) {
+private fun TestsSummary(passed: Int, total: Int, done: Int, onFullTest: () -> Unit, onReport: () -> Unit) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(spacingMedium)) {
             Text(
@@ -131,6 +159,21 @@ private fun TestsSummary(passed: Int, total: Int, done: Int) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(spacingSmall),
+                modifier = Modifier.fillMaxWidth().padding(top = spacingSmall),
+            ) {
+                Button(onClick = onFullTest, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Outlined.Checklist, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(Res.string.test_full))
+                }
+                FilledTonalButton(onClick = onReport, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Outlined.Description, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(Res.string.report))
+                }
+            }
         }
     }
 }
@@ -184,9 +227,29 @@ object TestSession {
 /** Speaker, microphone and camera tests need platform APIs. */
 @Composable internal expect fun DeviceTest(test: HwTest, onResult: (Boolean) -> Unit)
 
+/** Full-screen report with share-as-image/PDF actions (platform rendering and sharing). */
+@Composable internal expect fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Unit)
+
 @Composable
 fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
     var open by remember { mutableStateOf<HwTest?>(null) }
+    var run by remember { mutableStateOf<FullTestRun?>(null) }
+    var showReport by remember { mutableStateOf(false) }
+    // Called when a test finishes (null = skipped/closed); during a full run moves to the next test.
+    val finish = { test: HwTest, pass: Boolean? ->
+        if (pass != null) TestSession.results[test] = pass
+        val r = run
+        if (r != null) {
+            r.advance(pass)
+            open = r.current
+            if (r.isFinished) {
+                run = null
+                showReport = true
+            }
+        } else {
+            open = null
+        }
+    }
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.tests)) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
@@ -196,7 +259,15 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
             verticalArrangement = Arrangement.spacedBy(spacingSmall),
             modifier = Modifier.fillMaxSize().padding(paddingValues),
         ) {
-            item { TestsSummary(passed = results.values.count { it }, total = HwTest.entries.size, done = results.size) }
+            item {
+                TestsSummary(
+                    passed = results.values.count { it },
+                    total = HwTest.entries.size,
+                    done = results.size,
+                    onFullTest = { run = FullTestRun().also { open = it.current } },
+                    onReport = { showReport = true },
+                )
+            }
             items(HwTest.entries) { test ->
                 TestCard(test = test, result = results[test], onClick = { open = test })
             }
@@ -204,11 +275,8 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
     }
     open?.let { test ->
         var exitRequested by remember(test) { mutableStateOf(false) }
-        val close = { open = null }
-        val onResult = { pass: Boolean ->
-            TestSession.results[test] = pass
-            close()
-        }
+        val close = { finish(test, null) }
+        val onResult = { pass: Boolean -> finish(test, pass) }
         Dialog(
             // Back on an unfinished touch test first offers pass/fail (a dead area can't be covered).
             onDismissRequest = {
@@ -220,12 +288,30 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
             ),
         ) {
             Surface(modifier = Modifier.fillMaxSize()) {
-                when (test) {
-                    HwTest.SCREEN -> ScreenTest(onResult)
-                    HwTest.TOUCH -> TouchTest(onResult, exitRequested)
-                    else -> DeviceTest(test, onResult)
+                Box {
+                    androidx.compose.runtime.key(test) {
+                        when (test) {
+                            HwTest.SCREEN -> ScreenTest(onResult)
+                            HwTest.TOUCH -> TouchTest(onResult, exitRequested)
+                            else -> DeviceTest(test, onResult)
+                        }
+                    }
+                    if (run != null) {
+                        TextButton(
+                            onClick = close,
+                            modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding(),
+                        ) { Text(stringResource(Res.string.test_skip)) }
+                    }
                 }
             }
+        }
+    }
+    if (showReport) {
+        Dialog(
+            onDismissRequest = { showReport = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) { ReportView(results) { showReport = false } }
         }
     }
 }

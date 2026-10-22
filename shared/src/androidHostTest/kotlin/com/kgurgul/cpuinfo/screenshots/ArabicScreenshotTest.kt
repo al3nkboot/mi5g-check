@@ -32,6 +32,10 @@ import com.kgurgul.cpuinfo.features.settings.SettingsScreen
 import com.kgurgul.cpuinfo.features.settings.SettingsViewModel
 import com.kgurgul.cpuinfo.shared.Res
 import com.kgurgul.cpuinfo.shared.battery
+import com.kgurgul.cpuinfo.shared.test_sensor_accelerometer
+import com.kgurgul.cpuinfo.shared.test_sensor_gyroscope
+import com.kgurgul.cpuinfo.shared.test_sensor_proximity
+import com.kgurgul.cpuinfo.shared.test_sensor_light
 import com.kgurgul.cpuinfo.shared.battery_health
 import com.kgurgul.cpuinfo.shared.battery_good
 import com.kgurgul.cpuinfo.shared.level
@@ -149,7 +153,34 @@ class ArabicScreenshotTest {
 
     @Test
     fun tests() = snap("tests") {
-        TestsScreen(mapOf(HwTest.SCREEN to true, HwTest.TOUCH to true, HwTest.SPEAKER to false))
+        TestsScreen(mapOf(HwTest.SCREEN to true, HwTest.TOUCH to true, HwTest.SPEAKER to false, HwTest.SENSORS to true))
+    }
+
+    @Test
+    fun sensors() = snap("sensors") {
+        com.kgurgul.cpuinfo.features.tests.SensorsContent(
+            listOf(
+                com.kgurgul.cpuinfo.features.tests.SensorReading(Res.string.test_sensor_accelerometer, true, "0.12  9.79  0.31"),
+                com.kgurgul.cpuinfo.features.tests.SensorReading(Res.string.test_sensor_gyroscope, true, "0.00  0.01  -0.02"),
+                com.kgurgul.cpuinfo.features.tests.SensorReading(Res.string.test_sensor_proximity, true, "5.00"),
+                com.kgurgul.cpuinfo.features.tests.SensorReading(Res.string.test_sensor_light, false, null),
+            ),
+            onResult = {},
+        )
+    }
+
+    @Test
+    fun report() = snap("report") {
+        val report = com.kgurgul.cpuinfo.features.tests.TestReport.from(
+            mapOf(HwTest.SCREEN to true, HwTest.TOUCH to true, HwTest.SPEAKER to false, HwTest.SENSORS to true, HwTest.CHARGING to true),
+            model = "Xiaomi Redmi Note 13 5G", androidVersion = "14 (API 34)", batteryHealthPercent = 92, date = "23 أكتوبر 2026",
+        )
+        val text = com.kgurgul.cpuinfo.features.tests.rememberReportText(report, "\u206692%\u2069 (تقديري) · جيدة")
+        com.kgurgul.cpuinfo.features.tests.ReportContent(text)
+        // Also exercise the PNG renderer used for sharing.
+        val bmp = com.kgurgul.cpuinfo.features.tests.renderReportBitmap(text, rtl = true, brand = 0xFF0B4F8A.toInt())
+        val dir = File(System.getProperty("screenshots.dir") ?: "build/screens").apply { mkdirs() }
+        File(dir, "report-share.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
     @Test
