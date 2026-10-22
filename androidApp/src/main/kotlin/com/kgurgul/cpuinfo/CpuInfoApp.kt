@@ -19,6 +19,7 @@ import android.app.Application
 import com.kgurgul.cpuinfo.appinitializers.AppInitializerComponent
 import com.kgurgul.cpuinfo.di.androidModule
 import com.kgurgul.cpuinfo.di.sharedModule
+import com.kgurgul.cpuinfo.utils.AppLanguage
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -31,5 +32,6 @@ class CpuInfoApp : Application() {
             modules(androidModule, sharedModule)
         }
         AppInitializerComponent().init(this)
+        AppLanguage.init(this)
     }
 }

@@ -79,6 +79,7 @@ kotlin {
             dependencies {
                 implementation(projects.nativeAndroid)
                 api(libs.androidx.activity.compose)
+                api("androidx.appcompat:appcompat:1.7.1")
                 implementation(libs.androidx.core)
                 api(libs.androidx.core.splashscreen)
                 implementation(libs.androidx.datastore.preferences)

@@ -29,6 +29,7 @@ import com.kgurgul.cpuinfo.shared.cpu_l2
 import com.kgurgul.cpuinfo.shared.cpu_l3
 import com.kgurgul.cpuinfo.shared.cpu_l4
 import com.kgurgul.cpuinfo.shared.cpu_soc_name
+import com.kgurgul.cpuinfo.utils.SocNames
 import com.kgurgul.cpuinfo.utils.IDispatchersProvider
 import com.kgurgul.cpuinfo.utils.Utils
 import kotlin.time.Duration.Companion.milliseconds
@@ -45,7 +46,7 @@ class CpuDataObservable(
 
     override fun createObservable(params: Unit) = flow {
         while (true) {
-            val processorName = cpuDataNativeProvider.getCpuName()
+            val processorName = SocNames.withMarketingName(cpuDataNativeProvider.getCpuName())
             val abi = cpuDataProvider.getAbi()
             val logicalCoresCount = cpuDataProvider.getNumberOfLogicalCores()
             val physicalCoresCount = cpuDataProvider.getNumberOfPhysicalCores()

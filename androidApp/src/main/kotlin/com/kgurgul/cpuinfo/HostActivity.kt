@@ -17,7 +17,7 @@ package com.kgurgul.cpuinfo
 
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class HostActivity : ComponentActivity() {
+class HostActivity : AppCompatActivity() {
 
     private val viewModel: HostViewModel by viewModel()
     private val androidShortcutManager: AndroidShortcutManager by inject()

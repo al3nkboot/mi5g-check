@@ -16,7 +16,7 @@
 package com.kgurgul.cpuinfo.tv
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -40,7 +40,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class TvActivity : ComponentActivity() {
+class TvActivity : AppCompatActivity() {
 
     private val viewModel: HostViewModel by viewModel()
 

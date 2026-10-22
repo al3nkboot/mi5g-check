@@ -81,6 +81,11 @@ import com.kgurgul.cpuinfo.shared.pref_theme_default
 import com.kgurgul.cpuinfo.shared.pref_theme_light
 import com.kgurgul.cpuinfo.shared.settings
 import com.kgurgul.cpuinfo.shared.settings_about
+import com.kgurgul.cpuinfo.shared.pref_language
+import com.kgurgul.cpuinfo.shared.pref_language_arabic
+import com.kgurgul.cpuinfo.shared.pref_language_english
+import com.kgurgul.cpuinfo.shared.pref_language_system
+import com.kgurgul.cpuinfo.utils.AppLanguage
 import com.kgurgul.cpuinfo.shared.settings_about_credit
 import com.kgurgul.cpuinfo.shared.settings_others
 import com.kgurgul.cpuinfo.shared.temperature_unit
@@ -172,10 +177,12 @@ fun SettingsScreen(
     ) { paddingValues ->
         var isTemperatureDialogVisible by remember { mutableStateOf(false) }
         var isThemeDialogVisible by remember { mutableStateOf(false) }
+        var isLanguageDialogVisible by remember { mutableStateOf(false) }
         SettingsList(
             uiState = uiState,
             modifier = Modifier.padding(paddingValues),
             onThemeItemClicked = { isThemeDialogVisible = true },
+            onLanguageItemClicked = { isLanguageDialogVisible = true },
             onTemperatureItemClicked = { isTemperatureDialogVisible = true },
             onLicensesClicked = onLicensesClicked,
             onAboutClicked = {
@@ -202,13 +209,64 @@ fun SettingsScreen(
             options = uiState.themeDialogOptions,
             onOptionClicked = onThemeOptionClicked,
         )
+        if (isLanguageDialogVisible) {
+            AlertDialog(
+                onDismissRequest = { isLanguageDialogVisible = false },
+                title = { Text(text = stringResource(Res.string.pref_language)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(spacingSmall)) {
+                        val current = AppLanguage.current()
+                        for (option in listOf("ar", "en", "")) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(spacingMedium),
+                                modifier =
+                                    Modifier.fillMaxWidth()
+                                        .clickable {
+                                            isLanguageDialogVisible = false
+                                            AppLanguage.set(option)
+                                        }
+                                        .padding(vertical = spacingSmall),
+                            ) {
+                                RadioButton(
+                                    selected = option == current,
+                                    onClick = null,
+                                    colors =
+                                        RadioButtonDefaults.colors(
+                                            selectedColor = MaterialTheme.colorScheme.tertiaryFixed
+                                        ),
+                                )
+                                Text(
+                                    text = getLanguageName(option),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { isLanguageDialogVisible = false }) {
+                        Text(text = stringResource(Res.string.cancel))
+                    }
+                },
+            )
+        }
     }
 }
+
+@Composable
+private fun getLanguageName(option: String): String =
+    when (option) {
+        "ar" -> stringResource(Res.string.pref_language_arabic)
+        "en" -> stringResource(Res.string.pref_language_english)
+        else -> stringResource(Res.string.pref_language_system)
+    }
 
 @Composable
 private fun SettingsList(
     uiState: SettingsViewModel.UiState,
     onThemeItemClicked: () -> Unit,
+    onLanguageItemClicked: () -> Unit,
     onTemperatureItemClicked: () -> Unit,
     onLicensesClicked: () -> Unit,
     onAboutClicked: () -> Unit,
@@ -230,6 +288,13 @@ private fun SettingsList(
                     title = stringResource(Res.string.pref_theme),
                     subtitle = getThemeName(option = uiState.theme),
                     onClick = onThemeItemClicked,
+                )
+            }
+            item(key = "__languageItem") {
+                SettingsItem(
+                    title = stringResource(Res.string.pref_language),
+                    subtitle = getLanguageName(AppLanguage.current()),
+                    onClick = onLanguageItemClicked,
                 )
             }
             item(key = "__temperatureItem") {
@@ -285,9 +350,9 @@ private fun SettingsItem(
                 .clip(MaterialTheme.shapes.large)
                 .clickable(onClick = dropUnlessResumed { onClick() })
                 .padding(vertical = spacingMedium)
-                .padding(start = spacingLarge),
+                .padding(start = spacingLarge, end = spacingMedium),
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,

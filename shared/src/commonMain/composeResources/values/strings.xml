@@ -274,6 +274,10 @@
     <string name="pref_theme_default">System default</string>
     <string name="pref_theme">Theme</string>
     <string name="pref_theme_choose">Choose theme</string>
+    <string name="pref_language">Language</string>
+    <string name="pref_language_system">System default</string>
+    <string name="pref_language_arabic" translatable="false">العربية</string>
+    <string name="pref_language_english" translatable="false">English</string>
 
     <!--Temp-->
     <string name="no_temp_data">Sorry I can't find temperature sensors :-(</string>

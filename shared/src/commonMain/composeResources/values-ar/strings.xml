@@ -192,6 +192,8 @@
     <string name="pref_theme_default">افتراضي النظام</string>
     <string name="pref_theme">السمة</string>
     <string name="pref_theme_choose">اختر السمة</string>
+    <string name="pref_language">اللغة</string>
+    <string name="pref_language_system">افتراضي النظام</string>
     <string name="no_temp_data">عذرًا، لم أجد مستشعرات حرارة :-(</string>
     <string name="no_temp_data_admin_required">قراءة مستشعرات الحرارة تتطلب صلاحيات المسؤول. يرجى تشغيل التطبيق كمسؤول للوصول إلى بيانات الحرارة.</string>
     <string name="temp_admin_required_snackbar">يرجى التشغيل كمسؤول لجلب درجات الحرارة</string>
