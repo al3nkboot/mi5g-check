@@ -15,21 +15,17 @@
  */
 package com.kgurgul.cpuinfo
 
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -78,28 +74,8 @@ class HostActivity : AppCompatActivity() {
                 )
                 onDispose {}
             }
-            val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            val colors =
-                when {
-                    dynamicColor && darkTheme -> {
-                        val dynamicDarkColors = dynamicDarkColorScheme(LocalContext.current)
-                        DarkColors.copy(
-                            secondary = dynamicDarkColors.secondaryFixed,
-                            onSecondary = dynamicDarkColors.onSecondaryFixed,
-                        )
-                    }
-
-                    dynamicColor && !darkTheme -> {
-                        val dynamicLightColors = dynamicLightColorScheme(LocalContext.current)
-                        LightColors.copy(
-                            secondary = dynamicLightColors.secondaryFixed,
-                            onSecondary = dynamicLightColors.onSecondaryFixed,
-                        )
-                    }
-
-                    darkTheme -> DarkColors
-                    else -> LightColors
-                }
+            // Fixed Mi5G brand palette (no dynamic color) for a consistent look on every device.
+            val colors = if (darkTheme) DarkColors else LightColors
             LaunchedEffect(uiState.isApplicationSectionVisible) {
                 androidShortcutManager.createShortcuts(uiState.isApplicationSectionVisible)
             }

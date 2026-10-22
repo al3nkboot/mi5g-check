@@ -1,6 +1,45 @@
 package com.kgurgul.cpuinfo.features.battery
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BatteryFull
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material.icons.outlined.Cable
+import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Loop
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Power
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Thermostat
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.kgurgul.cpuinfo.shared.battery_section_capacity
+import com.kgurgul.cpuinfo.shared.battery_section_info
+import com.kgurgul.cpuinfo.shared.battery_section_live
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -9,7 +48,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,7 +58,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.kgurgul.cpuinfo.features.information.base.InformationRow
 import com.kgurgul.cpuinfo.shared.Res
 import com.kgurgul.cpuinfo.shared.battery
 import com.kgurgul.cpuinfo.shared.battery_charger
@@ -80,44 +117,161 @@ fun BatteryHealthScreen(uiState: BatteryHealthViewModel.UiState) {
     val fullMah = BatteryMath.estimateFullMah(s.chargeCounterMah, s.levelPercent)
     val healthPct = BatteryMath.healthPercent(fullMah, s.designMah)
     val power = BatteryMath.powerW(s.currentMa, s.voltageV)
-    val rows = buildList {
-        add(stringResource(Res.string.level) to (s.levelPercent?.let { "$it%" } ?: na))
-        add(stringResource(Res.string.battery_state) to (s.state?.let { stringResource(it) } ?: na))
-        add(stringResource(Res.string.battery_health) to (s.health?.let { stringResource(it) } ?: na))
-        add(stringResource(Res.string.battery_design_capacity) to (s.designMah?.let { ltr("$it mAh") } ?: na))
-        add(stringResource(Res.string.battery_full_capacity) to (fullMah?.let { ltr("$it mAh") + " ($estimated)" } ?: na))
-        add(stringResource(Res.string.battery_health_percent) to (healthPct?.let { ltr("$it%") + " ($estimated)" } ?: na))
-        s.cycleCount?.let { add(stringResource(Res.string.battery_cycle_count) to it.toString()) }
-        add(stringResource(Res.string.battery_live_current) to (s.currentMa?.let { ltr("$it mA") } ?: na))
-        add(stringResource(Res.string.battery_power) to (power?.let { ltr("${fmt1(it)} W") } ?: na))
-        add(stringResource(Res.string.voltage) to (s.voltageV?.let { ltr("${fmt2(it.toDouble())} V") } ?: na))
-        add(stringResource(Res.string.temperature) to (s.temperatureC?.let { ltr("${fmt1(it.toDouble())} °C") } ?: na))
-        add(
-            stringResource(Res.string.battery_charger) to
-                (if (s.chargers.isEmpty()) stringResource(Res.string.battery_unplugged)
-                else s.chargers.map { stringResource(it) }.joinToString(" + "))
-        )
-        add(stringResource(Res.string.technology) to (s.technology ?: na))
+    val capacity = buildList {
+        add(Triple(Icons.Outlined.BatteryStd, stringResource(Res.string.battery_design_capacity), s.designMah?.let { ltr("$it mAh") } ?: na))
+        add(Triple(Icons.Outlined.BatteryFull, stringResource(Res.string.battery_full_capacity), fullMah?.let { ltr("$it mAh") + " ($estimated)" } ?: na))
+        add(Triple(Icons.Outlined.Favorite, stringResource(Res.string.battery_health), s.health?.let { stringResource(it) } ?: na))
+        s.cycleCount?.let { add(Triple(Icons.Outlined.Loop, stringResource(Res.string.battery_cycle_count), it.toString())) }
     }
+    val live = listOf(
+        Triple(Icons.Outlined.ElectricBolt, stringResource(Res.string.battery_live_current), s.currentMa?.let { ltr("$it mA") } ?: na),
+        Triple(Icons.Outlined.Power, stringResource(Res.string.battery_power), power?.let { ltr("${fmt1(it)} W") } ?: na),
+        Triple(Icons.Outlined.Speed, stringResource(Res.string.voltage), s.voltageV?.let { ltr("${fmt2(it.toDouble())} V") } ?: na),
+        Triple(Icons.Outlined.Thermostat, stringResource(Res.string.temperature), s.temperatureC?.let { ltr("${fmt1(it.toDouble())} °C") } ?: na),
+    )
+    val info = listOf(
+        Triple(
+            Icons.Outlined.Cable,
+            stringResource(Res.string.battery_charger),
+            if (s.chargers.isEmpty()) stringResource(Res.string.battery_unplugged)
+            else s.chargers.map { stringResource(it) }.joinToString(" + "),
+        ),
+        Triple(Icons.Outlined.Memory, stringResource(Res.string.technology), s.technology ?: na),
+    )
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.battery)) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
     ) { paddingValues ->
         LazyColumn(
-            contentPadding = PaddingValues(spacingSmall),
-            verticalArrangement = Arrangement.spacedBy(spacingSmall),
+            contentPadding = PaddingValues(spacingMedium),
+            verticalArrangement = Arrangement.spacedBy(spacingMedium),
             modifier = Modifier.fillMaxSize().padding(paddingValues),
         ) {
-            itemsIndexed(rows) { index, (title, value) ->
-                InformationRow(title = title, value = value, isLastItem = index == rows.lastIndex)
+            item {
+                HeaderCard(
+                    healthPct = healthPct,
+                    estimated = estimated,
+                    na = na,
+                    level = s.levelPercent,
+                    state = s.state?.let { stringResource(it) } ?: na,
+                )
             }
+            item { GroupCard(stringResource(Res.string.battery_section_capacity), capacity) }
+            item { GroupCard(stringResource(Res.string.battery_section_live), live) }
+            item { GroupCard(stringResource(Res.string.battery_section_info), info) }
             item {
                 Text(
                     text = stringResource(Res.string.battery_estimate_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(spacingMedium),
+                    modifier = Modifier.padding(horizontal = spacingSmall),
                 )
+            }
+        }
+    }
+}
+
+private fun gaugeColor(pct: Int?, primary: Color): Color = when {
+    pct == null -> primary
+    pct >= 80 -> Color(0xFF43A047)
+    pct >= 60 -> Color(0xFFF9A825)
+    else -> Color(0xFFC62828)
+}
+
+@Composable
+private fun HeaderCard(healthPct: Int?, estimated: String, na: String, level: Int?, state: String) {
+    val track = MaterialTheme.colorScheme.outlineVariant
+    val color = gaugeColor(healthPct, MaterialTheme.colorScheme.secondary)
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(spacingMedium),
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(140.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val stroke = 14.dp.toPx()
+                    val inset = stroke / 2
+                    val arcSize = Size(size.width - stroke, size.height - stroke)
+                    drawArc(track, 135f, 270f, false, Offset(inset, inset), arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+                    val sweep = 270f * ((healthPct ?: 0).coerceIn(0, 100) / 100f)
+                    if (sweep > 0f) drawArc(color, 135f, sweep, false, Offset(inset, inset), arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = healthPct?.let { ltr("$it%") } ?: na,
+                        style = if (healthPct != null) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = stringResource(Res.string.battery_health_percent),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (healthPct != null) {
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.padding(top = 4.dp),
+                        ) {
+                            Text(
+                                text = estimated,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.width(spacingMedium))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(Res.string.level),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = level?.let { ltr("$it%") } ?: na,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                LinearProgressIndicator(
+                    progress = { (level ?: 0) / 100f },
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = spacingSmall).height(8.dp),
+                    strokeCap = StrokeCap.Round,
+                )
+                Text(
+                    text = state,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupCard(title: String, rows: List<Triple<ImageVector, String, String>>) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(vertical = spacingSmall)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = spacingMedium, vertical = spacingSmall),
+            )
+            rows.forEachIndexed { i, (icon, label, value) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = spacingMedium, vertical = 10.dp),
+                ) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(spacingMedium))
+                    Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, textAlign = TextAlign.End)
+                }
+                if (i != rows.lastIndex) HorizontalDivider(modifier = Modifier.padding(horizontal = spacingMedium), color = MaterialTheme.colorScheme.outlineVariant)
             }
         }
     }

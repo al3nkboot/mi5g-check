@@ -1,67 +1,81 @@
-![Build and test](https://github.com/kamgurgul/cpu-info/actions/workflows/shared_test.yml/badge.svg)
+<p align="center"><img src="docs/icon.png" width="110" alt="Mi5G Check icon" /></p>
 
-<img src="info/icon_glow.png" width="100" height="100" alt="CPU Info Icon" />
+<div dir="rtl">
 
-# CPU Info
+# فاحص الجوال (Mi5G Check)
 
-CPU Info provides comprehensive information about your device's hardware and software.
+**افحص جوالك بالكامل — العتاد، صحة البطارية، والشاشة واللمس والسماعات والميكروفون والكاميرا — في تطبيق عربي واحد بدون إعلانات.**
 
-[<img src="https://f-droid.org/badge/get-it-on.png"
-alt="Get it on F-Droid"
-height="80">](https://f-droid.org/packages/com.kgurgul.cpuinfo/)
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
-alt="Get it on Google Play"
-height="80">](https://play.google.com/store/apps/details?id=com.kgurgul.cpuinfo)
-[<img src="info/huawei_badge.png"
-alt="Get it on HUAWEI AppGallery"
-height="80">](https://appgallery.cloud.huawei.com/ag/n/app/C102414279?channelId=Main+badge+&id=fb28f69db40840f8b79b541cc4a13775&s=1378847C6B5A46F97603F316DD1450C7D3F74C023A62827B43619C2D41F2341D&detailType=0&v=&callType=AGDLINK&installType=0000)
-[<img src="https://raw.githubusercontent.com/kamgurgul/cpu-info/master/info/get-it-on-github.png"
-alt='Get it on GitHub' height="80">](https://github.com/kamgurgul/cpu-info/releases/latest)
-[<img src="https://raw.githubusercontent.com/kamgurgul/cpu-info/master/info/amazon-badge.png"
-alt='Available on Amazon AppStore' height="80">](https://www.amazon.com/Kamil-Gurgul-KG-Soft-Info/dp/B088FYQTYR/ref=sr_1_5?keywords=cpu+info&qid=1661020642&s=mobile-apps&sr=1-5)
-[<img src="info/app-store-badge.png"
-alt="Download on the App Store"
-height="80">](https://apps.apple.com/us/app/cpu-info/id6560116815)
-[<img src="info/flathub_badge.png"
-alt="Get it on Flathub"
-height="80">](https://flathub.org/apps/com.kgurgul.cpuinfo)
-[<img src="info/ms_badge.png"
-alt="Get it from Microsoft"
-height="80">](https://apps.microsoft.com/detail/9phxq0f4knbl)
-[<img src="info/get-it-on-homebrew.png"
-alt="Get it from Homebrew"
-height="80">](https://formulae.brew.sh/cask/cpu-info)
+| البطارية | الفحوصات | العتاد | حول |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/battery.png" width="200" /> | <img src="docs/screenshots/tests.png" width="200" /> | <img src="docs/screenshots/hardware.png" width="200" /> | <img src="docs/screenshots/about.png" width="200" /> |
 
-## Supported platforms
+## المزايا
 
-| Android | Android TV | Wear OS | iOS | Desktop |                          Wasm                           |
-|:-------:|:----------:|:-------:|:---:|:-------:|:-------------------------------------------------------:|
-|    ✅    |     ✅      |    ✅    |  ✅  |    ✅    | ✅<br/>[In preview](https://kgurgul.com/assets/cpuinfo/) |
+- **معلومات العتاد والنظام:** المعالج (مع الاسم التجاري للشريحة)، الذاكرة، التخزين، الشاشة، الحساسات، الشبكة، الكاميرات، إصدار أندرويد.
+- **صحة البطارية:** السعة التصميمية، السعة الكاملة الحالية ونسبة الصحة (**قيم تقديرية ومُعلَّمة بكلمة «تقديري»**)، عدد الدورات عند توفره، والتيار والقدرة والجهد والحرارة مباشرة. ما لا يوفره الجهاز يظهر «غير متاح».
+- **فحوصات العتاد:** الشاشة (بكسلات ميتة/عالقة)، اللمس، السماعات (الخارجية وسماعة المكالمات)، الميكروفون، الكاميرا (الأمامية والخلفية).
+- الحرارة، التطبيقات المثبتة، الوضع الداكن/الفاتح، العربية (افتراضيًا) والإنجليزية.
 
-## Tech stack
+## التحميل
 
-* [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
-* [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
-* [Jetpack ViewModel/Lifecycle](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-lifecycle.html)
-* [Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
-* [Koin](https://github.com/InsertKoinIO/koin)
-* [Coil](https://github.com/coil-kt/coil)
-* [DataStore](https://developer.android.com/kotlin/multiplatform/datastore)
-* [pytorch/cpuinfo](https://github.com/pytorch/cpuinfo)
-* [OSHI](https://github.com/oshi/oshi)
+حمّل أحدث ملف APK من صفحة الإصدارات: **[أحدث إصدار](https://github.com/al3nkboot/mi5g-check/releases/latest)**
 
-## License
+## الأذونات
 
-    Copyright KG Soft
+| الإذن | السبب |
+|---|---|
+| `CAMERA` | فحص الكاميرا فقط (معاينة، لا تُحفظ صور). |
+| `RECORD_AUDIO` | فحص الميكروفون (تسجيل 3 ثوانٍ في الذاكرة ثم تشغيله، لا يُحفظ). |
+| `MODIFY_AUDIO_SETTINGS` | توجيه نغمة الفحص إلى سماعة المكالمات. |
+| `QUERY_ALL_PACKAGES`، `GET_PACKAGE_SIZE`، `REQUEST_DELETE_PACKAGES` | قائمة التطبيقات وأحجامها وإمكانية إلغاء تثبيت تطبيق بطلبك. |
+| `KILL_BACKGROUND_PROCESSES` | إيقاف عمليات تطبيق في الخلفية بطلبك. |
+| `ACCESS_NETWORK_STATE`، `ACCESS_WIFI_STATE`، `READ_BASIC_PHONE_STATE` | عرض معلومات الشبكة والواي فاي والشريحة في صفحة العتاد. |
+| `READ_GSERVICES` | عرض معرّف خدمات Google في صفحة النظام (يُعرض محليًا فقط). |
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+## الخصوصية
 
-       http://www.apache.org/licenses/LICENSE-2.0
+التطبيق **لا يطلب إذن الإنترنت (`INTERNET`) أصلًا**، ولا يحتوي على أي مكتبات تتبع أو تحليلات أو إعلانات. كل المعلومات تُقرأ وتُعرض على جهازك فقط ولا تُرسل إلى أي مكان. (رابط «حول التطبيق» يفتح المتصفح فقط.)
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+## الشكر والترخيص
+
+مبني على [CPU Info](https://github.com/kamgurgul/cpu-info) من تطوير Kamil Gurgul، ويستخدم طرق تقدير البطارية من [aBattery](https://github.com/abanana84/abattery) لـ abanana84 — وكلاهما بترخيص Apache-2.0. هذا المشروع أيضًا بترخيص [Apache-2.0](LICENSE)؛ انظر [NOTICE](NOTICE).
+
+</div>
+
+---
+
+# Mi5G Check
+
+**Check your whole phone — hardware, battery health, screen, touch, speakers, mic and camera — in one ad-free app, Arabic-first.**
+
+## Features
+
+- **Hardware & system info:** CPU (with SoC marketing name), RAM, storage, display, sensors, network, cameras, Android version.
+- **Battery health:** design capacity, current full capacity and health % (**estimated values, clearly labelled “estimated”**), cycle count when available, plus live current, power, voltage and temperature. Anything the device doesn't expose shows “N/A”.
+- **Hardware tests:** screen (dead/stuck pixels), touch, speakers (loudspeaker and earpiece), microphone, camera (front and rear).
+- Temperatures, installed apps, dark/light theme, Arabic (default) and English.
+
+## Download
+
+Get the latest APK from **[the latest release](https://github.com/al3nkboot/mi5g-check/releases/latest)**.
+
+## Permissions
+
+| Permission | Why |
+|---|---|
+| `CAMERA` | Camera test only (live preview, nothing is saved). |
+| `RECORD_AUDIO` | Microphone test (3 s recording kept in memory and played back, never saved). |
+| `MODIFY_AUDIO_SETTINGS` | Route the test tone to the earpiece. |
+| `QUERY_ALL_PACKAGES`, `GET_PACKAGE_SIZE`, `REQUEST_DELETE_PACKAGES` | Apps list, sizes, and uninstalling an app when you ask. |
+| `KILL_BACKGROUND_PROCESSES` | Stop an app's background processes when you ask. |
+| `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `READ_BASIC_PHONE_STATE` | Show network, Wi-Fi and SIM info on the Hardware page. |
+| `READ_GSERVICES` | Show the Google Services Framework ID on the OS page (displayed locally only). |
+
+## Privacy
+
+The app **does not request the `INTERNET` permission at all** and contains no tracking, analytics or ad libraries. Everything is read and shown on your device and never sent anywhere. (The About link just opens your browser.)
+
+## Credits & license
+
+Based on [CPU Info](https://github.com/kamgurgul/cpu-info) by Kamil Gurgul, with battery estimation methods from [aBattery](https://github.com/abanana84/abattery) by abanana84 — both Apache-2.0. This project is licensed under [Apache-2.0](LICENSE); see [NOTICE](NOTICE).

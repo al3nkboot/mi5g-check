@@ -74,6 +74,11 @@ class ArabicScreenshotTest {
     }
 
     @Test
+    fun about() = snap("about") {
+        SettingsScreen(SettingsViewModel.UiState(), {}, {}, {})
+    }
+
+    @Test
     fun settings() = snap("settings") {
         SettingsScreen(SettingsViewModel.UiState(), {}, {}, {})
     }

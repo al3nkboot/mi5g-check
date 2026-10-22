@@ -1,6 +1,30 @@
 package com.kgurgul.cpuinfo.features.tests
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import com.kgurgul.cpuinfo.shared.tests_summary
+import com.kgurgul.cpuinfo.shared.tests_summary_hint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -21,7 +45,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -78,12 +101,79 @@ fun NavGraphBuilder.testsScreen() {
     }
 }
 
-enum class HwTest(val title: StringResource) {
-    SCREEN(Res.string.test_screen),
-    TOUCH(Res.string.test_touch),
-    SPEAKER(Res.string.test_speaker),
-    MIC(Res.string.test_mic),
-    CAMERA(Res.string.test_camera),
+enum class HwTest(val title: StringResource, val icon: ImageVector) {
+    SCREEN(Res.string.test_screen, Icons.Outlined.Smartphone),
+    TOUCH(Res.string.test_touch, Icons.Outlined.TouchApp),
+    SPEAKER(Res.string.test_speaker, Icons.AutoMirrored.Outlined.VolumeUp),
+    MIC(Res.string.test_mic, Icons.Outlined.Mic),
+    CAMERA(Res.string.test_camera, Icons.Outlined.PhotoCamera),
+}
+
+private val PassGreen = Color(0xFF43A047)
+
+@Composable
+private fun TestsSummary(passed: Int, total: Int, done: Int) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(spacingMedium)) {
+            Text(
+                text = "\u2066" + stringResource(Res.string.tests_summary, passed, total) + "\u2069",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            LinearProgressIndicator(
+                progress = { if (total == 0) 0f else done / total.toFloat() },
+                color = MaterialTheme.colorScheme.secondary,
+                strokeCap = StrokeCap.Round,
+                modifier = Modifier.fillMaxWidth().padding(vertical = spacingSmall).height(8.dp),
+            )
+            Text(
+                text = stringResource(Res.string.tests_summary_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TestCard(test: HwTest, result: Boolean?, onClick: () -> Unit) {
+    val (chipBg, chipFg, chipIcon) = when (result) {
+        true -> Triple(PassGreen.copy(alpha = 0.18f), PassGreen, Icons.Filled.CheckCircle)
+        false -> Triple(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, Icons.Filled.Cancel)
+        null -> Triple(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.colorScheme.onSurfaceVariant, Icons.AutoMirrored.Outlined.HelpOutline)
+    }
+    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(spacingMedium)) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.size(44.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(test.icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+            }
+            Spacer(Modifier.width(spacingMedium))
+            Text(
+                text = stringResource(test.title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Surface(shape = RoundedCornerShape(50), color = chipBg) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    Icon(chipIcon, contentDescription = null, tint = chipFg, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(
+                            when (result) {
+                                true -> Res.string.test_pass
+                                false -> Res.string.test_fail
+                                null -> Res.string.test_not_run
+                            }
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = chipFg,
+                    )
+                }
+            }
+        }
+    }
 }
 
 /** Results for the current app session only (not persisted). */
@@ -101,29 +191,14 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.tests)) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        LazyColumn(
+            contentPadding = PaddingValues(spacingMedium),
+            verticalArrangement = Arrangement.spacedBy(spacingSmall),
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+        ) {
+            item { TestsSummary(passed = results.values.count { it }, total = HwTest.entries.size, done = results.size) }
             items(HwTest.entries) { test ->
-                val result = results[test]
-                ListItem(
-                    headlineContent = { Text(stringResource(test.title)) },
-                    trailingContent = {
-                        Text(
-                            text = stringResource(
-                                when (result) {
-                                    true -> Res.string.test_pass
-                                    false -> Res.string.test_fail
-                                    null -> Res.string.test_not_run
-                                }
-                            ),
-                            color = when (result) {
-                                true -> Color(0xFF4CAF50)
-                                false -> MaterialTheme.colorScheme.error
-                                null -> MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        )
-                    },
-                    modifier = Modifier.clickable { open = test },
-                )
+                TestCard(test = test, result = results[test], onClick = { open = test })
             }
         }
     }

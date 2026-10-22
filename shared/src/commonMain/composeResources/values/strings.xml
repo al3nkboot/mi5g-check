@@ -357,4 +357,9 @@
     <string name="test_fail">Fail</string>
     <string name="test_not_run">Not run</string>
     <string name="test_error">The test could not run on this device.</string>
+    <string name="battery_section_capacity">Capacity</string>
+    <string name="battery_section_live">Live</string>
+    <string name="battery_section_info">Info</string>
+    <string name="tests_summary">%1$d/%2$d passed</string>
+    <string name="tests_summary_hint">Tap a test to start. Results are kept for this session only.</string>
 </resources>

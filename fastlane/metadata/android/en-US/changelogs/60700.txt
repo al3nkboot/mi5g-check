@@ -1,4 +1,0 @@
-* Add more Android OS info
-* Libs update
-* Small technical improvements
-* Bump minimal Android SDK to support DataStore
