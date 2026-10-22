@@ -13,6 +13,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.kgurgul.cpuinfo.domain.model.ItemValue
 import com.kgurgul.cpuinfo.features.battery.BatteryHealthScreen
+import com.kgurgul.cpuinfo.features.tests.HwTest
+import com.kgurgul.cpuinfo.features.tests.TestsScreen
+import com.kgurgul.cpuinfo.features.tests.TouchGrid
+import com.kgurgul.cpuinfo.features.tests.TouchTest
 import com.kgurgul.cpuinfo.features.battery.BatteryHealthViewModel
 import com.kgurgul.cpuinfo.features.battery.BatterySnapshot
 import com.kgurgul.cpuinfo.shared.battery_discharging
@@ -136,5 +140,17 @@ class ArabicScreenshotTest {
                 ),
             )
         )
+    }
+
+    @Test
+    fun tests() = snap("tests") {
+        TestsScreen(mapOf(HwTest.SCREEN to true, HwTest.TOUCH to true, HwTest.SPEAKER to false))
+    }
+
+    @Test
+    fun touch() = snap("touch") {
+        val grid = TouchGrid(cols = 8, rows = 14)
+        for (r in 0 until 14) for (c in 0 until 8) if (r < 9 || c < 3) grid.touch(c + 0.5f, r + 0.5f, 8f, 14f)
+        TouchTest(onResult = {}, exitRequested = true, grid = grid)
     }
 }
