@@ -1,0 +1,27 @@
+rootProject.name = "mi5g-check"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    // repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id("io.github.ben-manes.versions.settings") version "0.66.0"
+}
+
+include(":androidApp")
+include(":androidApp:baselineprofile")
+include(":native-android")
+include(":shared")

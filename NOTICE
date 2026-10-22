@@ -1,0 +1,8 @@
+Mi5G Check (فاحص الجوال)
+Copyright 2026 midroid5G
+
+This product is a modified version of CPU Info by Kamil Gurgul (KG Soft),
+https://github.com/kamgurgul/cpu-info, licensed under the Apache License 2.0.
+
+Modifications: rebranded (name, applicationId, version), Arabic translation
+and RTL enabled, non-Android targets (desktop, iOS, web/wasm, Wear OS) removed.
