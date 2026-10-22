@@ -111,7 +111,23 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
         report.batteryHealthPercent?.let { ltr("$it%") + " (${if (systemHealth != null) fromSystem else estimated})" },
         snapshot.health?.let { stringResource(it) },
     ).joinToString(" · ").ifEmpty { stringResource(Res.string.battery_not_available) }
-    val text = rememberReportText(report, healthText)
+    val perf = remember { com.kgurgul.cpuinfo.features.perf.PerfStore(context) }
+    val base = rememberReportText(report, healthText)
+    val bench = perf.bench
+    val speed = perf.storage
+    val approx = stringResource(Res.string.perf_approx)
+    val text = base.copy(
+        info = base.info + listOfNotNull(
+            bench?.let {
+                stringResource(Res.string.report_cpu_score) to
+                    "${stringResource(Res.string.perf_single)} ${ltr("${it.single}")} · ${stringResource(Res.string.perf_multi, "${it.threads}")} ${ltr("${it.multi}")}"
+            },
+            speed?.let {
+                stringResource(Res.string.report_storage_speed) to
+                    "${stringResource(Res.string.perf_write)} ${ltr("${it.writeMbS} MB/s")} · ${stringResource(Res.string.perf_read)} ${ltr("${it.readMbS} MB/s")} ($approx)"
+            },
+        ),
+    )
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val brand = com.kgurgul.cpuinfo.ui.theme.md_theme_light_primary.toArgb()
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {

@@ -37,6 +37,18 @@ import com.kgurgul.cpuinfo.shared.small
 import com.kgurgul.cpuinfo.shared.unknown
 import com.kgurgul.cpuinfo.shared.width
 import com.kgurgul.cpuinfo.utils.round2
+import com.kgurgul.cpuinfo.features.perf.PerfMath
+import android.os.Build
+import com.kgurgul.cpuinfo.shared.battery_not_available
+import com.kgurgul.cpuinfo.shared.display_hdr
+import com.kgurgul.cpuinfo.shared.display_hdr_now
+import com.kgurgul.cpuinfo.shared.display_max_luminance
+import com.kgurgul.cpuinfo.shared.display_refresh_rates
+import com.kgurgul.cpuinfo.shared.display_resolution_native
+import com.kgurgul.cpuinfo.shared.display_size_estimated
+import com.kgurgul.cpuinfo.shared.display_wide_gamut
+import com.kgurgul.cpuinfo.shared.no
+import com.kgurgul.cpuinfo.shared.yes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
@@ -153,6 +165,50 @@ actual class ScreenDataProvider actual constructor() : IScreenDataProvider, Koin
             ItemValue.NameResource(Res.string.refresh_rate, "${refreshRate.round2()} Hz")
         )
 
+        functionsList.addAll(getExtendedDisplayInfo(display))
         return functionsList
+    }
+
+    /** Supported refresh rates, native resolution, estimated size, HDR and wide color gamut. */
+    @Suppress("DEPRECATION")
+    private fun getExtendedDisplayInfo(display: android.view.Display): List<ItemValue> = buildList {
+        val na = Res.string.battery_not_available
+        val modes = runCatching { display.supportedModes.toList() }.getOrDefault(emptyList())
+        val rates = PerfMath.formatRefreshRates(modes.map { it.refreshRate })
+        add(if (rates != null) ItemValue.NameResource(Res.string.display_refresh_rates, rates) else ItemValue.NameValueResource(Res.string.display_refresh_rates, na))
+        val native = modes.maxByOrNull { it.physicalWidth.toLong() * it.physicalHeight }
+        if (native != null) {
+            add(ItemValue.NameResource(Res.string.display_resolution_native, "${native.physicalWidth} × ${native.physicalHeight}"))
+        }
+        val real = DisplayMetrics().also { runCatching { display.getRealMetrics(it) } }
+        val inches = PerfMath.diagonalInches(real.widthPixels, real.heightPixels, real.xdpi, real.ydpi)
+        add(if (inches != null) ItemValue.NameResource(Res.string.display_size_estimated, "$inches″") else ItemValue.NameValueResource(Res.string.display_size_estimated, na))
+        val hdr = runCatching { display.hdrCapabilities?.supportedHdrTypes }.getOrNull()
+        if (hdr == null) {
+            add(ItemValue.NameValueResource(Res.string.display_hdr, na))
+        } else if (hdr.isEmpty()) {
+            add(ItemValue.NameValueResource(Res.string.display_hdr, Res.string.no))
+        } else {
+            add(ItemValue.NameResource(Res.string.display_hdr, hdr.distinct().joinToString(", ") { hdrName(it) }))
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            add(ItemValue.NameValueResource(Res.string.display_hdr_now, if (display.isHdr) Res.string.yes else Res.string.no))
+            add(ItemValue.NameValueResource(Res.string.display_wide_gamut, if (display.isWideColorGamut) Res.string.yes else Res.string.no))
+        } else {
+            add(ItemValue.NameValueResource(Res.string.display_wide_gamut, na))
+        }
+        val lum = runCatching { display.hdrCapabilities?.desiredMaxLuminance }.getOrNull()
+        add(
+            if (lum != null && lum > 1f && lum < 20000f) ItemValue.NameResource(Res.string.display_max_luminance, "${lum.toInt()} nits")
+            else ItemValue.NameValueResource(Res.string.display_max_luminance, na)
+        )
+    }
+
+    private fun hdrName(type: Int) = when (type) {
+        1 -> "Dolby Vision"
+        2 -> "HDR10"
+        3 -> "HLG"
+        4 -> "HDR10+"
+        else -> "HDR($type)"
     }
 }

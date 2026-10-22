@@ -19,6 +19,9 @@
 - **تنبيه الحرارة (اختياري، معطل افتراضيًا):** إشعار عندما تتجاوز حرارة البطارية حدًا تختاره (42 °م افتراضيًا)، مرة في الساعة كحد أقصى.
 - **فحوصات العتاد:** الشاشة (بكسلات ميتة/عالقة)، اللمس، السماعات (الخارجية وسماعة المكالمات)، الميكروفون، الكاميرا (الأمامية والخلفية)، الحساسات (التسارع، الجيروسكوب، القرب، الإضاءة بقيم مباشرة)، الاهتزاز، أزرار الصوت، الفلاش، الاتصال (واي فاي، بلوتوث، GPS بدون إنترنت)، البصمة، الشحن (القدرة بالواط ونوع الشاحن، «شحن سريع» تقديري فوق ~15 واط).
 - **فحص شامل وتقرير:** زر «فحص شامل» يمر على جميع الفحوصات بالترتيب (مع إمكانية التخطي) ثم يعرض تقريرًا بطراز الجهاز وإصدار أندرويد وصحة البطارية (تقديرية) ونتيجة كل فحص والتاريخ، ويمكن مشاركته كصورة PNG أو ملف PDF. يُنشأ التقرير على الجهاز ويُشارك فقط ولا يُرفع إلى أي مكان.
+- **الشاشة:** معدل التحديث الحالي وجميع المعدلات المدعومة، الدقة الأصلية، الكثافة (dpi)، الحجم بالبوصة («تقديري»)، أنواع HDR، نطاق الألوان الواسع، وأقصى سطوع إن أعلنه النظام.
+- **الكاميرات:** لكل كاميرا: الاتجاه، أقصى دقة صورة (ميغابكسل)، أقصى دقة فيديو (4K/8K)، التثبيت البصري OIS، البعد البؤري، فتحة العدسة، الفلاش، دعم RAW، والكاميرات الفعلية للكاميرا المنطقية المتعددة.
+- **الأداء:** اختبار خفيف للمعالج (~12 ثانية، نواة واحدة ومتعدد الأنوية) بنتيجة خاصة بالتطبيق لا تُقارن بـ Geekbench/AnTuTu، ونوع التخزين (UFS/eMMC إن أمكن) واختبار سرعة الكتابة/القراءة المتتالية («تقريبي»، ملف مؤقت يُحذف بعده). تُضاف النتائج إلى التقرير.
 - الحرارة، التطبيقات المثبتة، الوضع الداكن/الفاتح، العربية (افتراضيًا) والإنجليزية.
 
 ## التحميل
@@ -68,6 +71,9 @@
 - **Temperature alert (optional, off by default):** a notification when the battery is hotter than your threshold (42 °C by default), at most once per hour.
 - **Hardware tests:** screen (dead/stuck pixels), touch, speakers (loudspeaker and earpiece), microphone, camera (front and rear), sensors (live accelerometer, gyroscope, proximity, light), vibration, volume buttons, flashlight, connectivity (Wi-Fi, Bluetooth, GPS without internet), fingerprint, charging (watts and charger type, “fast charging” estimated above ~15 W).
 - **Full test & report:** “Full test” walks through every test in order (skip allowed), then shows a report with device model, Android version, battery health (estimated), each test result and the date. Share it as a PNG image or a PDF. The report is generated on-device and only shared by you; nothing is uploaded.
+- **Display:** current and all supported refresh rates, native resolution, density (dpi), size in inches (“estimated”), HDR types, wide color gamut and max luminance when reported.
+- **Cameras:** per camera: facing, max photo megapixels, max video (4K/8K), OIS, focal length, aperture, flash, RAW support and physical cameras of a logical multi-camera.
+- **Performance:** a light CPU benchmark (~12 s, single- and multi-core) with the app's own score (not comparable with Geekbench/AnTuTu), storage type (UFS/eMMC when readable) and a sequential write/read speed test (“approximate”, temporary file deleted afterwards). Results are added to the report.
 - Temperatures, installed apps, dark/light theme, Arabic (default) and English.
 
 ## Download

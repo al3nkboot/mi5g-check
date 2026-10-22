@@ -30,7 +30,7 @@ import com.kgurgul.cpuinfo.features.information.ram.RamInfoScreen
 import com.kgurgul.cpuinfo.features.information.ram.RamInfoViewModel
 import com.kgurgul.cpuinfo.features.settings.SettingsScreen
 import com.kgurgul.cpuinfo.features.settings.SettingsViewModel
-import com.kgurgul.cpuinfo.shared.Res
+import com.kgurgul.cpuinfo.shared.*
 import com.kgurgul.cpuinfo.shared.battery
 import com.kgurgul.cpuinfo.shared.test_sensor_accelerometer
 import com.kgurgul.cpuinfo.shared.test_sensor_gyroscope
@@ -211,6 +211,73 @@ class ArabicScreenshotTest {
         val bmp = com.kgurgul.cpuinfo.features.tests.renderReportBitmap(text, rtl = true, brand = 0xFF0B4F8A.toInt())
         val dir = File(System.getProperty("screenshots.dir") ?: "build/screens").apply { mkdirs() }
         File(dir, "report-share.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    @Test
+    @Config(qualifiers = "+h1300dp")
+    fun display() = snap("display") {
+        com.kgurgul.cpuinfo.features.information.screen.ScreenInfoScreen(
+            com.kgurgul.cpuinfo.features.information.screen.ScreenInfoViewModel.UiState(
+                isInitializing = false,
+                items = persistentListOf(
+                    ItemValue.NameResource(Res.string.screen_density_dpi, "420 dpi"),
+                    ItemValue.NameResource(Res.string.width, "1080 px"),
+                    ItemValue.NameResource(Res.string.height, "2400 px"),
+                    ItemValue.NameResource(Res.string.refresh_rate, "120.0 Hz"),
+                    ItemValue.NameResource(Res.string.display_refresh_rates, "60 / 90 / 120 Hz"),
+                    ItemValue.NameResource(Res.string.display_resolution_native, "1220 × 2712"),
+                    ItemValue.NameResource(Res.string.display_size_estimated, "6.7″"),
+                    ItemValue.NameResource(Res.string.display_hdr, "HDR10, HLG, HDR10+"),
+                    ItemValue.NameValueResource(Res.string.display_hdr_now, Res.string.yes),
+                    ItemValue.NameValueResource(Res.string.display_wide_gamut, Res.string.yes),
+                    ItemValue.NameValueResource(Res.string.display_max_luminance, Res.string.battery_not_available),
+                ),
+            )
+        )
+    }
+
+    @Test
+    @Config(qualifiers = "+h1500dp")
+    fun cameras() = snap("cameras") {
+        HardwareInfoScreen(
+            HardwareInfoViewModel.UiState(
+                isInitializing = false,
+                hardwareItems = persistentListOf(
+                    ItemValue.NameResource(Res.string.cameras, ""),
+                    ItemValue.NameResource(Res.string.amount, "2"),
+                    ItemValue.FormattedNameResource(Res.string.hardware_camera_name_format, listOf(Res.string.camera, "0"), " "),
+                    ItemValue.FormattedNameValueResource(Res.string.hardware_camera_type_format, listOf(Res.string.type), Res.string.back),
+                    ItemValue.NameResource(Res.string.camera_megapixels, "50.1 MP (8160×6144)"),
+                    ItemValue.NameResource(Res.string.camera_video_max, "3840×2160 (4K)"),
+                    ItemValue.NameValueResource(Res.string.camera_ois, Res.string.yes),
+                    ItemValue.NameResource(Res.string.camera_focal, "6.3 mm"),
+                    ItemValue.NameResource(Res.string.camera_aperture, "f/1.8"),
+                    ItemValue.NameValueResource(Res.string.camera_flash, Res.string.yes),
+                    ItemValue.NameValueResource(Res.string.camera_raw, Res.string.yes),
+                    ItemValue.NameValueResource(Res.string.camera_logical, Res.string.yes),
+                    ItemValue.NameResource(Res.string.camera_physical, "2, 3, 4"),
+                    ItemValue.FormattedNameResource(Res.string.hardware_camera_name_format, listOf(Res.string.camera, "1"), " "),
+                    ItemValue.FormattedNameValueResource(Res.string.hardware_camera_type_format, listOf(Res.string.type), Res.string.front),
+                    ItemValue.NameResource(Res.string.camera_megapixels, "16.0 MP (4608×3456)"),
+                    ItemValue.NameResource(Res.string.camera_video_max, "1920×1080 (Full HD)"),
+                    ItemValue.NameValueResource(Res.string.camera_ois, Res.string.no),
+                    ItemValue.NameValueResource(Res.string.camera_flash, Res.string.no),
+                    ItemValue.NameValueResource(Res.string.camera_raw, Res.string.battery_not_available),
+                ),
+            )
+        )
+    }
+
+    @Test
+    @Config(qualifiers = "+h1100dp")
+    fun benchmark() = snap("benchmark") {
+        com.kgurgul.cpuinfo.features.perf.PerformanceContent(
+            bench = com.kgurgul.cpuinfo.features.perf.BenchResult(single = 1234, multi = 6789, threads = 8, seconds = 12.1),
+            benchProgress = null, onRunBench = {}, onCancelBench = {},
+            storageType = "UFS",
+            storage = com.kgurgul.cpuinfo.features.perf.StorageSpeed(writeMbS = 412.5, readMbS = 1650.2, sizeMb = 256),
+            storageRunning = false, storageLowSpace = false, onRunStorage = {},
+        )
     }
 
     @Test

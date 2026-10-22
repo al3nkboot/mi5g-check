@@ -21,6 +21,9 @@ import androidx.compose.material.icons.outlined.SmartButton
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Speed
+import com.kgurgul.cpuinfo.shared.perf_title
+import com.kgurgul.cpuinfo.shared.perf_hint
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.TextButton
@@ -219,6 +222,28 @@ private fun TestCard(test: HwTest, result: Boolean?, onClick: () -> Unit) {
     }
 }
 
+@Composable
+private fun PerformanceCard(onClick: () -> Unit) {
+    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(spacingMedium)) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(44.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                }
+            }
+            Spacer(Modifier.width(spacingMedium))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(Res.string.perf_title), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(Res.string.perf_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
 /** Results for the current app session only (not persisted). */
 object TestSession {
     val results = mutableStateMapOf<HwTest, Boolean>()
@@ -235,6 +260,7 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
     var open by remember { mutableStateOf<HwTest?>(null) }
     var run by remember { mutableStateOf<FullTestRun?>(null) }
     var showReport by remember { mutableStateOf(false) }
+    var showPerf by remember { mutableStateOf(false) }
     // Called when a test finishes (null = skipped/closed); during a full run moves to the next test.
     val finish = { test: HwTest, pass: Boolean? ->
         if (pass != null) TestSession.results[test] = pass
@@ -268,6 +294,7 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
                     onReport = { showReport = true },
                 )
             }
+            item { PerformanceCard(onClick = { showPerf = true }) }
             items(HwTest.entries) { test ->
                 TestCard(test = test, result = results[test], onClick = { open = test })
             }
@@ -303,6 +330,16 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
                         ) { Text(stringResource(Res.string.test_skip)) }
                     }
                 }
+            }
+        }
+    }
+    if (showPerf) {
+        Dialog(
+            onDismissRequest = { showPerf = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                com.kgurgul.cpuinfo.features.perf.PerformanceView { showPerf = false }
             }
         }
     }

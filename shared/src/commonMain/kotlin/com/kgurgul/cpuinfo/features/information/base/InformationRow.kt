@@ -36,7 +36,9 @@ fun InformationRow(
         } else {
             MaterialTheme.colorScheme.onBackground
         }
+    // Keep Latin/number values (e.g. "420 dpi", "50.1 MP") in left-to-right order inside RTL layouts.
     val nullableValue = value.ifEmpty { null }
+        ?.let { if (it.none { c -> c in '\u0600'..'\u06FF' }) "\u200E$it\u200E" else it }
     ItemValueRow(
         title = title,
         value = nullableValue,

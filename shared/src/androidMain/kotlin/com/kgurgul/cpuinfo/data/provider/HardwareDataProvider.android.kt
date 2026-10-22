@@ -24,6 +24,21 @@ import android.content.pm.PackageManager
 import android.hardware.ConsumerIrManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.graphics.ImageFormat
+import android.media.CamcorderProfile
+import android.media.MediaCodecList
+import android.media.MediaRecorder
+import com.kgurgul.cpuinfo.features.perf.PerfMath
+import com.kgurgul.cpuinfo.shared.battery_not_available
+import com.kgurgul.cpuinfo.shared.camera_aperture
+import com.kgurgul.cpuinfo.shared.camera_flash
+import com.kgurgul.cpuinfo.shared.camera_focal
+import com.kgurgul.cpuinfo.shared.camera_logical
+import com.kgurgul.cpuinfo.shared.camera_megapixels
+import com.kgurgul.cpuinfo.shared.camera_ois
+import com.kgurgul.cpuinfo.shared.camera_physical
+import com.kgurgul.cpuinfo.shared.camera_raw
+import com.kgurgul.cpuinfo.shared.camera_video_max
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
@@ -782,13 +797,6 @@ actual class HardwareDataProvider actual constructor() : KoinComponent {
                         if (lensAmount > 0) {
                             functionsList.add(
                                 ItemValue.FormattedNameResource(
-                                    Res.string.hardware_camera_orientation_format,
-                                    listOf(Res.string.orientation),
-                                    orientation.toString(),
-                                )
-                            )
-                            functionsList.add(
-                                ItemValue.FormattedNameResource(
                                     Res.string.hardware_camera_lens_format,
                                     listOf(Res.string.camera_lens_number),
                                     lensAmount.toString(),
@@ -796,6 +804,7 @@ actual class HardwareDataProvider actual constructor() : KoinComponent {
                             )
                         }
                     }
+                    functionsList.addAll(getCameraDetails(cameraId, characteristics))
                 } catch (e: Exception) {
                     CpuLogger.e(e) { "Cannot read camera characteristics" }
                 }
@@ -807,6 +816,79 @@ actual class HardwareDataProvider actual constructor() : KoinComponent {
 
         return functionsList
     }
+
+    /** Megapixels, max video, OIS, focal length, aperture, flash, RAW and logical multi-camera. */
+    private fun getCameraDetails(cameraId: String, c: CameraCharacteristics): List<ItemValue> = buildList {
+        val na = Res.string.battery_not_available
+        fun yesNo(name: StringResource, v: Boolean?) =
+            add(ItemValue.NameValueResource(name, if (v == null) na else getYesNoStringResource(v)))
+        val map = c.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        val photoSizes = buildList {
+            map?.getOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
+            map?.getHighResolutionOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
+        }
+        val maxPhoto = photoSizes.maxByOrNull { it.width.toLong() * it.height }
+        add(
+            if (maxPhoto != null) ItemValue.NameResource(
+                Res.string.camera_megapixels,
+                "${PerfMath.megapixels(maxPhoto.width, maxPhoto.height)} MP (${maxPhoto.width}×${maxPhoto.height})",
+            ) else ItemValue.NameValueResource(Res.string.camera_megapixels, na)
+        )
+        val maxVideo = map?.getOutputSizes(MediaRecorder::class.java)
+            ?.filter { encoderSupports(it.width, it.height) }
+            ?.maxByOrNull { it.width.toLong() * it.height }
+        val camcorder = cameraId.toIntOrNull()?.let { id ->
+            runCatching {
+                when {
+                    Build.VERSION.SDK_INT >= 30 && CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_8KUHD) -> "8K"
+                    CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_2160P) -> "4K"
+                    else -> null
+                }
+            }.getOrNull()
+        }
+        add(
+            if (maxVideo != null) {
+                val label = PerfMath.videoLabel(maxVideo.width, maxVideo.height).ifEmpty { camcorder ?: "" }
+                ItemValue.NameResource(Res.string.camera_video_max, "${maxVideo.width}×${maxVideo.height}" + if (label.isNotEmpty()) " ($label)" else "")
+            } else if (camcorder != null) {
+                ItemValue.NameResource(Res.string.camera_video_max, camcorder)
+            } else ItemValue.NameValueResource(Res.string.camera_video_max, na)
+        )
+        yesNo(
+            Res.string.camera_ois,
+            c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
+                ?.contains(CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_ON),
+        )
+        val focal = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+        add(
+            if (focal != null && focal.isNotEmpty()) ItemValue.NameResource(Res.string.camera_focal, focal.distinct().joinToString(", ") { "${it.round2()} mm" })
+            else ItemValue.NameValueResource(Res.string.camera_focal, na)
+        )
+        val apertures = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+        add(
+            if (apertures != null && apertures.isNotEmpty()) ItemValue.NameResource(Res.string.camera_aperture, apertures.distinct().joinToString(", ") { "f/${it.round2()}" })
+            else ItemValue.NameValueResource(Res.string.camera_aperture, na)
+        )
+        yesNo(Res.string.camera_flash, c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE))
+        val caps = c.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+        yesNo(Res.string.camera_raw, caps?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW))
+        if (Build.VERSION.SDK_INT >= 28 && caps?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA) == true) {
+            add(ItemValue.NameValueResource(Res.string.camera_logical, Res.string.yes))
+            val ids = c.physicalCameraIds
+            if (ids.isNotEmpty()) add(ItemValue.NameResource(Res.string.camera_physical, ids.sorted().joinToString(", ")))
+        }
+    }
+
+    private val videoEncoders by lazy {
+        runCatching {
+            MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.filter { it.isEncoder }.mapNotNull { info ->
+                info.supportedTypes.firstOrNull { it.startsWith("video/") }?.let { info.getCapabilitiesForType(it).videoCapabilities }
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun encoderSupports(w: Int, h: Int) =
+        videoEncoders.isEmpty() || videoEncoders.any { runCatching { it.isSizeSupported(w, h) }.getOrDefault(false) }
 
     private fun getCameraFacing(facing: Int?): StringResource =
         when (facing) {
