@@ -47,6 +47,15 @@ private val pages = listOf(
 @Composable
 fun OnboardingScreen(onDone: () -> Unit) {
     var page by rememberSaveable { mutableIntStateOf(0) }
+    // Follow the app's language explicitly so the dots read right-to-left in Arabic.
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val rtl = runCatching {
+        android.text.TextUtils.getLayoutDirectionFromLocale(config.locales[0]) == android.view.View.LAYOUT_DIRECTION_RTL
+    }.getOrDefault(false)
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalLayoutDirection provides
+            if (rtl) androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr,
+    ) {
     Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp)) {
             Row(Modifier.fillMaxWidth()) {
@@ -64,7 +73,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 Text(
                     stringResource(pages[page].first),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.secondary,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
@@ -79,7 +88,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 pages.indices.forEach { i ->
                     Box(
                         Modifier.padding(4.dp).size(8.dp).background(
-                            if (i == page) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                            if (i == page) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outlineVariant,
                             CircleShape,
                         )
                     )
@@ -88,7 +97,12 @@ fun OnboardingScreen(onDone: () -> Unit) {
             Button(
                 onClick = { if (page < pages.lastIndex) page++ else onDone() },
                 modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             ) { Text(stringResource(if (page < pages.lastIndex) R.string.onb_next else R.string.onb_start)) }
         }
     }
+}
 }
