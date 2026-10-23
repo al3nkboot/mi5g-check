@@ -804,7 +804,10 @@ actual class HardwareDataProvider actual constructor() : KoinComponent {
                             )
                         }
                     }
-                    functionsList.addAll(getCameraDetails(cameraId, characteristics))
+                    functionsList.addAll(
+                        runCatching { getCameraDetails(cameraId, characteristics) }
+                            .getOrDefault(listOf(ItemValue.NameValueResource(Res.string.camera_megapixels, Res.string.battery_not_available)))
+                    )
                 } catch (e: Exception) {
                     CpuLogger.e(e) { "Cannot read camera characteristics" }
                 }
@@ -820,62 +823,68 @@ actual class HardwareDataProvider actual constructor() : KoinComponent {
     /** Megapixels, max video, OIS, focal length, aperture, flash, RAW and logical multi-camera. */
     private fun getCameraDetails(cameraId: String, c: CameraCharacteristics): List<ItemValue> = buildList {
         val na = Res.string.battery_not_available
-        fun yesNo(name: StringResource, v: Boolean?) =
-            add(ItemValue.NameValueResource(name, if (v == null) na else getYesNoStringResource(v)))
-        val map = c.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-        val photoSizes = buildList {
-            map?.getOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
-            map?.getHighResolutionOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
+        // Each row is guarded on its own: a failing reader shows «غير متاح» instead of crashing the screen.
+        fun row(name: StringResource, block: () -> ItemValue?) {
+            val item = runCatching(block).getOrElse { ItemValue.NameValueResource(name, na) }
+            if (item != null) add(item)
         }
-        val maxPhoto = photoSizes.maxByOrNull { it.width.toLong() * it.height }
-        add(
+        fun yesNo(name: StringResource, v: () -> Boolean?) =
+            row(name) { v().let { ItemValue.NameValueResource(name, if (it == null) na else getYesNoStringResource(it)) } }
+        val map = runCatching { c.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) }.getOrNull()
+        row(Res.string.camera_megapixels) {
+            val photoSizes = buildList {
+                map?.getOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
+                map?.getHighResolutionOutputSizes(ImageFormat.JPEG)?.let { addAll(it) }
+            }
+            val maxPhoto = photoSizes.maxByOrNull { it.width.toLong() * it.height }
             if (maxPhoto != null) ItemValue.NameResource(
                 Res.string.camera_megapixels,
                 "${PerfMath.megapixels(maxPhoto.width, maxPhoto.height)} MP (${maxPhoto.width}×${maxPhoto.height})",
             ) else ItemValue.NameValueResource(Res.string.camera_megapixels, na)
-        )
-        val maxVideo = map?.getOutputSizes(MediaRecorder::class.java)
-            ?.filter { encoderSupports(it.width, it.height) }
-            ?.maxByOrNull { it.width.toLong() * it.height }
-        val camcorder = cameraId.toIntOrNull()?.let { id ->
-            runCatching {
-                when {
-                    Build.VERSION.SDK_INT >= 30 && CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_8KUHD) -> "8K"
-                    CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_2160P) -> "4K"
-                    else -> null
-                }
-            }.getOrNull()
         }
-        add(
+        row(Res.string.camera_video_max) {
+            val maxVideo = map?.getOutputSizes(MediaRecorder::class.java)
+                ?.filter { encoderSupports(it.width, it.height) }
+                ?.maxByOrNull { it.width.toLong() * it.height }
+            val camcorder = cameraId.toIntOrNull()?.let { id ->
+                runCatching {
+                    when {
+                        Build.VERSION.SDK_INT >= 30 && CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_8KUHD) -> "8K"
+                        CamcorderProfile.hasProfile(id, CamcorderProfile.QUALITY_2160P) -> "4K"
+                        else -> null
+                    }
+                }.getOrNull()
+            }
             if (maxVideo != null) {
                 val label = PerfMath.videoLabel(maxVideo.width, maxVideo.height).ifEmpty { camcorder ?: "" }
                 ItemValue.NameResource(Res.string.camera_video_max, "${maxVideo.width}×${maxVideo.height}" + if (label.isNotEmpty()) " ($label)" else "")
             } else if (camcorder != null) {
                 ItemValue.NameResource(Res.string.camera_video_max, camcorder)
             } else ItemValue.NameValueResource(Res.string.camera_video_max, na)
-        )
-        yesNo(
-            Res.string.camera_ois,
+        }
+        yesNo(Res.string.camera_ois) {
             c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
-                ?.contains(CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_ON),
-        )
-        val focal = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-        add(
+                ?.contains(CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_ON)
+        }
+        row(Res.string.camera_focal) {
+            val focal = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
             if (focal != null && focal.isNotEmpty()) ItemValue.NameResource(Res.string.camera_focal, focal.distinct().joinToString(", ") { "${it.round2()} mm" })
             else ItemValue.NameValueResource(Res.string.camera_focal, na)
-        )
-        val apertures = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
-        add(
+        }
+        row(Res.string.camera_aperture) {
+            val apertures = c.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
             if (apertures != null && apertures.isNotEmpty()) ItemValue.NameResource(Res.string.camera_aperture, apertures.distinct().joinToString(", ") { "f/${it.round2()}" })
             else ItemValue.NameValueResource(Res.string.camera_aperture, na)
-        )
-        yesNo(Res.string.camera_flash, c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE))
-        val caps = c.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
-        yesNo(Res.string.camera_raw, caps?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW))
+        }
+        yesNo(Res.string.camera_flash) { c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) }
+        val caps = runCatching { c.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES) }.getOrNull()
+        yesNo(Res.string.camera_raw) { caps?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW) }
         if (Build.VERSION.SDK_INT >= 28 && caps?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA) == true) {
             add(ItemValue.NameValueResource(Res.string.camera_logical, Res.string.yes))
-            val ids = c.physicalCameraIds
-            if (ids.isNotEmpty()) add(ItemValue.NameResource(Res.string.camera_physical, ids.sorted().joinToString(", ")))
+            row(Res.string.camera_physical) {
+                val ids = c.physicalCameraIds
+                if (ids.isNotEmpty()) ItemValue.NameResource(Res.string.camera_physical, ids.sorted().joinToString(", ")) else null
+            }
         }
     }
 

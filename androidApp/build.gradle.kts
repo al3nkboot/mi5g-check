@@ -86,6 +86,10 @@ android {
         unitTests {
             isReturnDefaultValues = true
             isIncludeAndroidResources = true
+            all {
+                it.maxHeapSize = "2g"
+                it.forkEvery = 1
+            }
         }
         animationsDisabled = true
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -93,6 +97,7 @@ android {
 
     lint {
         abortOnError = false
+        checkDependencies = true
     }
 
     compileOptions {
@@ -122,6 +127,10 @@ licenseReport {
 dependencies {
     implementation(projects.shared)
     implementation(libs.androidx.profileinstaller)
+
+    testImplementation(kotlin("test-junit"))
+    testImplementation("org.robolectric:robolectric:4.16")
+    testImplementation("androidx.test:core:1.6.1")
 
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)

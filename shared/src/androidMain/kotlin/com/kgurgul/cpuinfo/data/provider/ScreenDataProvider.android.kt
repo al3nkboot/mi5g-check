@@ -50,6 +50,7 @@ import com.kgurgul.cpuinfo.shared.display_wide_gamut
 import com.kgurgul.cpuinfo.shared.no
 import com.kgurgul.cpuinfo.shared.yes
 import kotlinx.coroutines.flow.Flow
+import org.jetbrains.compose.resources.StringResource
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -165,7 +166,10 @@ actual class ScreenDataProvider actual constructor() : IScreenDataProvider, Koin
             ItemValue.NameResource(Res.string.refresh_rate, "${refreshRate.round2()} Hz")
         )
 
-        functionsList.addAll(getExtendedDisplayInfo(display))
+        functionsList.addAll(
+            runCatching { getExtendedDisplayInfo(display) }
+                .getOrDefault(listOf(ItemValue.NameValueResource(Res.string.display_refresh_rates, Res.string.battery_not_available)))
+        )
         return functionsList
     }
 
@@ -173,35 +177,44 @@ actual class ScreenDataProvider actual constructor() : IScreenDataProvider, Koin
     @Suppress("DEPRECATION")
     private fun getExtendedDisplayInfo(display: android.view.Display): List<ItemValue> = buildList {
         val na = Res.string.battery_not_available
-        val modes = runCatching { display.supportedModes.toList() }.getOrDefault(emptyList())
-        val rates = PerfMath.formatRefreshRates(modes.map { it.refreshRate })
-        add(if (rates != null) ItemValue.NameResource(Res.string.display_refresh_rates, rates) else ItemValue.NameValueResource(Res.string.display_refresh_rates, na))
-        val native = modes.maxByOrNull { it.physicalWidth.toLong() * it.physicalHeight }
-        if (native != null) {
-            add(ItemValue.NameResource(Res.string.display_resolution_native, "${native.physicalWidth} × ${native.physicalHeight}"))
+        // Each row is guarded on its own: a failing reader shows «غير متاح» instead of crashing the screen.
+        fun row(name: StringResource, block: () -> ItemValue?) {
+            val item = runCatching(block).getOrElse { ItemValue.NameValueResource(name, na) }
+            if (item != null) add(item)
         }
-        val real = DisplayMetrics().also { runCatching { display.getRealMetrics(it) } }
-        val inches = PerfMath.diagonalInches(real.widthPixels, real.heightPixels, real.xdpi, real.ydpi)
-        add(if (inches != null) ItemValue.NameResource(Res.string.display_size_estimated, "$inches″") else ItemValue.NameValueResource(Res.string.display_size_estimated, na))
-        val hdr = runCatching { display.hdrCapabilities?.supportedHdrTypes }.getOrNull()
-        if (hdr == null) {
-            add(ItemValue.NameValueResource(Res.string.display_hdr, na))
-        } else if (hdr.isEmpty()) {
-            add(ItemValue.NameValueResource(Res.string.display_hdr, Res.string.no))
-        } else {
-            add(ItemValue.NameResource(Res.string.display_hdr, hdr.distinct().joinToString(", ") { hdrName(it) }))
+        val modes = runCatching { display.supportedModes.toList() }.getOrDefault(emptyList())
+        row(Res.string.display_refresh_rates) {
+            val rates = PerfMath.formatRefreshRates(modes.map { it.refreshRate })
+            if (rates != null) ItemValue.NameResource(Res.string.display_refresh_rates, rates) else ItemValue.NameValueResource(Res.string.display_refresh_rates, na)
+        }
+        row(Res.string.display_resolution_native) {
+            modes.maxByOrNull { it.physicalWidth.toLong() * it.physicalHeight }
+                ?.let { ItemValue.NameResource(Res.string.display_resolution_native, "${it.physicalWidth} × ${it.physicalHeight}") }
+        }
+        row(Res.string.display_size_estimated) {
+            val real = DisplayMetrics().also { display.getRealMetrics(it) }
+            val inches = PerfMath.diagonalInches(real.widthPixels, real.heightPixels, real.xdpi, real.ydpi)
+            if (inches != null) ItemValue.NameResource(Res.string.display_size_estimated, "$inches″") else ItemValue.NameValueResource(Res.string.display_size_estimated, na)
+        }
+        row(Res.string.display_hdr) {
+            val hdr = display.hdrCapabilities?.supportedHdrTypes
+            when {
+                hdr == null -> ItemValue.NameValueResource(Res.string.display_hdr, na)
+                hdr.isEmpty() -> ItemValue.NameValueResource(Res.string.display_hdr, Res.string.no)
+                else -> ItemValue.NameResource(Res.string.display_hdr, hdr.distinct().joinToString(", ") { hdrName(it) })
+            }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            add(ItemValue.NameValueResource(Res.string.display_hdr_now, if (display.isHdr) Res.string.yes else Res.string.no))
-            add(ItemValue.NameValueResource(Res.string.display_wide_gamut, if (display.isWideColorGamut) Res.string.yes else Res.string.no))
+            row(Res.string.display_hdr_now) { ItemValue.NameValueResource(Res.string.display_hdr_now, if (display.isHdr) Res.string.yes else Res.string.no) }
+            row(Res.string.display_wide_gamut) { ItemValue.NameValueResource(Res.string.display_wide_gamut, if (display.isWideColorGamut) Res.string.yes else Res.string.no) }
         } else {
             add(ItemValue.NameValueResource(Res.string.display_wide_gamut, na))
         }
-        val lum = runCatching { display.hdrCapabilities?.desiredMaxLuminance }.getOrNull()
-        add(
+        row(Res.string.display_max_luminance) {
+            val lum = display.hdrCapabilities?.desiredMaxLuminance
             if (lum != null && lum > 1f && lum < 20000f) ItemValue.NameResource(Res.string.display_max_luminance, "${lum.toInt()} nits")
             else ItemValue.NameValueResource(Res.string.display_max_luminance, na)
-        )
+        }
     }
 
     private fun hdrName(type: Int) = when (type) {

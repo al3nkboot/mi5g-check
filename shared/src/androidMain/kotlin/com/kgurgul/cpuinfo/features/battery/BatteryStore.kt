@@ -95,11 +95,14 @@ class BatteryStore(context: Context) {
 
         /** Schedules the ~6-hourly sample/alert job (kept if already scheduled). */
         fun schedule(context: Context) {
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK,
-                ExistingPeriodicWorkPolicy.KEEP,
-                PeriodicWorkRequestBuilder<BatteryWorker>(6, TimeUnit.HOURS).build(),
-            )
+            // Never let background scheduling take down app start (e.g. WorkManager not initialized).
+            runCatching {
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    WORK,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    PeriodicWorkRequestBuilder<BatteryWorker>(6, TimeUnit.HOURS).build(),
+                )
+            }
         }
     }
 }

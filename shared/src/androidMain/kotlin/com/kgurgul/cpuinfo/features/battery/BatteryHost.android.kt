@@ -40,11 +40,14 @@ internal actual fun BatteryHost(uiState: BatteryHealthViewModel.UiState) {
     val loaded = !uiState.isLoading
     LaunchedEffect(loaded) {
         if (!loaded) return@LaunchedEffect
-        withContext(Dispatchers.IO) { store.record(uiState.snapshot); history = store.history() }
+        withContext(Dispatchers.IO) {
+            runCatching { store.record(uiState.snapshot) }
+            history = runCatching { store.history() }.getOrDefault(emptyList())
+        }
     }
     val tempBucket = uiState.snapshot.temperatureC?.toInt()
     LaunchedEffect(tempBucket, alertOn, threshold) {
-        withContext(Dispatchers.IO) { store.checkTemperature(uiState.snapshot.temperatureC) }
+        withContext(Dispatchers.IO) { runCatching { store.checkTemperature(uiState.snapshot.temperatureC) } }
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->

@@ -144,7 +144,9 @@ actual fun PerformanceView(onClose: () -> Unit) {
                     storageRunning = true
                     scope.launch {
                         try {
-                            val r = runStorageTest(context.cacheDir)
+                            val r = runCatching { runStorageTest(context.cacheDir) }
+                                .onFailure { if (it is kotlinx.coroutines.CancellationException) throw it }
+                                .getOrNull()
                             lowSpace = r == null
                             if (r != null) { storage = r; store.storage = r }
                         } finally {
