@@ -56,4 +56,11 @@ class PerfMathTest {
         assertEquals(2000, CpuBench.score(100, 500_000_000))
         assertEquals(0, CpuBench.score(5, 0))
     }
+
+    @Test
+    fun oneDecimalHasNoFloatNoise() {
+        kotlin.test.assertEquals("881.2", PerfMath.oneDecimal(881.2f.toDouble()))
+        kotlin.test.assertEquals("2421.0", PerfMath.oneDecimal(2421.0))
+        kotlin.test.assertEquals("0.1", PerfMath.oneDecimal(0.05))
+    }
 }

@@ -115,7 +115,7 @@ actual fun PerformanceView(onClose: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = spacingSmall)) {
             Text(stringResource(Res.string.perf_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f).padding(spacingSmall))
-            TextButton(onClick = { benchJob?.cancel(); onClose() }) { Text(stringResource(Res.string.report_close)) }
+            TextButton(onClick = { benchJob?.cancel(); onClose() }, colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)) { Text(stringResource(Res.string.report_close)) }
         }
         PerformanceContent(
             bench = bench,

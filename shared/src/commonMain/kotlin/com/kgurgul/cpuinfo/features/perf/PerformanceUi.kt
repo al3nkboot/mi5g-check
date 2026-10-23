@@ -42,7 +42,7 @@ import org.jetbrains.compose.resources.stringResource
 /** Wraps a left-to-right value (numbers, units) so it renders correctly inside RTL text. */
 internal fun ltrValue(s: String) = "\u200E$s\u200E"
 
-fun formatSeconds(s: Double) = "${(s * 10).roundToLong() / 10.0} s"
+fun formatSeconds(s: Double) = "${PerfMath.oneDecimal(s)} s"
 
 /**
  * Runs the benchmark: [phaseSeconds] single-core, then the same on [threads] parallel workers
@@ -117,8 +117,8 @@ fun PerformanceContent(
             when {
                 storageLowSpace -> Note(stringResource(Res.string.perf_low_space))
                 storage != null -> {
-                    ValueLine(stringResource(Res.string.perf_write), ltrValue("${storage.writeMbS} MB/s") + " ($approx)")
-                    ValueLine(stringResource(Res.string.perf_read), ltrValue("${storage.readMbS} MB/s") + " ($approx)")
+                    ValueLine(stringResource(Res.string.perf_write), ltrValue("${PerfMath.oneDecimal(storage.writeMbS)} MB/s") + " ($approx)")
+                    ValueLine(stringResource(Res.string.perf_read), ltrValue("${PerfMath.oneDecimal(storage.readMbS)} MB/s") + " ($approx)")
                 }
                 else -> ValueLine(stringResource(Res.string.perf_storage), stringResource(Res.string.perf_not_run))
             }

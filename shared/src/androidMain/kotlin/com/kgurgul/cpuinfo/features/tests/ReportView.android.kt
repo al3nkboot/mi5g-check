@@ -124,7 +124,7 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
             },
             speed?.let {
                 stringResource(Res.string.report_storage_speed) to
-                    "${stringResource(Res.string.perf_write)} ${ltr("${it.writeMbS} MB/s")} · ${stringResource(Res.string.perf_read)} ${ltr("${it.readMbS} MB/s")} ($approx)"
+                    "${stringResource(Res.string.perf_write)} ${ltr("${com.kgurgul.cpuinfo.features.perf.PerfMath.oneDecimal(it.writeMbS)} MB/s")} · ${stringResource(Res.string.perf_read)} ${ltr("${com.kgurgul.cpuinfo.features.perf.PerfMath.oneDecimal(it.readMbS)} MB/s")} ($approx)"
             },
         ),
     )
@@ -133,7 +133,7 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = spacingSmall)) {
             Text(text.title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f).padding(spacingSmall))
-            TextButton(onClick = onClose) { Text(stringResource(Res.string.report_close)) }
+            TextButton(onClick = onClose, colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)) { Text(stringResource(Res.string.report_close)) }
         }
         ReportContent(text, Modifier.weight(1f))
         Row(

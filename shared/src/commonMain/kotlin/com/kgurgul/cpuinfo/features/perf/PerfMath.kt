@@ -6,6 +6,15 @@ import kotlin.math.sqrt
 
 /** Pure helpers for display/camera/storage/benchmark values (unit tested). */
 object PerfMath {
+    /** Exactly one decimal with Latin digits, e.g. 881.2000122 -> "881.2" (no float->double noise). */
+    fun oneDecimal(v: Double): String {
+        if (v.isNaN() || v.isInfinite()) return "0.0"
+        val t = (v * 10).roundToLong()
+        val sign = if (t < 0) "-" else ""
+        val a = kotlin.math.abs(t)
+        return "$sign${a / 10}.${a % 10}"
+    }
+
     /** Megapixels with one decimal, e.g. 4080x3060 -> 12.5. */
     fun megapixels(width: Int, height: Int): Double =
         (width.toLong() * height / 100_000.0).roundToLong() / 10.0
