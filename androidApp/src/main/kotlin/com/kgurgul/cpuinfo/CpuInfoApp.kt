@@ -27,6 +27,9 @@ class CpuInfoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        CrashLog.install(this)
+        // The crash viewer runs in its own process: skip all heavy init there.
+        if (isCrashProcess()) return
         startKoin {
             androidContext(this@CpuInfoApp)
             modules(androidModule, sharedModule)
@@ -35,4 +38,10 @@ class CpuInfoApp : Application() {
         AppLanguage.init(this)
         com.kgurgul.cpuinfo.features.battery.BatteryStore.schedule(this)
     }
+
+    private fun isCrashProcess(): Boolean = runCatching {
+        val name = if (android.os.Build.VERSION.SDK_INT >= 28) getProcessName()
+        else java.io.File("/proc/self/cmdline").readText().trim { it <= ' ' }
+        name.endsWith(":crash")
+    }.getOrDefault(false)
 }

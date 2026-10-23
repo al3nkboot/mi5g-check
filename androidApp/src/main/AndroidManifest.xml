@@ -58,6 +58,12 @@
         tools:targetApi="tiramisu">
 
         <activity
+            android:name="com.kgurgul.cpuinfo.CrashActivity"
+            android:exported="false"
+            android:process=":crash"
+            android:theme="@android:style/Theme.Material.Light" />
+
+        <activity
             android:name="com.kgurgul.cpuinfo.HostActivity"
             android:exported="true"
             android:theme="@style/Theme.Launcher"

@@ -51,6 +51,13 @@ class HostActivity : AppCompatActivity() {
     private val androidShortcutManager: AndroidShortcutManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Show the last crash first, in a minimal separate screen, before any heavy UI composes.
+        if (savedInstanceState == null && CrashLog.file(this).exists()) {
+            super.onCreate(savedInstanceState)
+            startActivity(android.content.Intent(this, CrashActivity::class.java))
+            finish()
+            return
+        }
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
