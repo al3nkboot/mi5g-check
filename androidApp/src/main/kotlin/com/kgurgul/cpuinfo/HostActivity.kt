@@ -86,9 +86,20 @@ class HostActivity : AppCompatActivity() {
             LaunchedEffect(uiState.isApplicationSectionVisible) {
                 androidShortcutManager.createShortcuts(uiState.isApplicationSectionVisible)
             }
+            var onboardingDone by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(OnboardingFlag.isDone(this@HostActivity)) }
             CpuInfoTheme(useDarkTheme = darkTheme, colors = colors) {
-                HostScreen(viewModel = viewModel)
+                if (onboardingDone) {
+                    HostScreen(viewModel = viewModel)
+                } else {
+                    OnboardingScreen(onDone = { OnboardingFlag.setDone(this@HostActivity); onboardingDone = true })
+                }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Cheap refresh of the home-screen widget when leaving the app.
+        BatteryWidget.updateAll(applicationContext)
     }
 }

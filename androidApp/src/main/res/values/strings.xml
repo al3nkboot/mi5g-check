@@ -18,4 +18,18 @@
 
     <string name="app_name" translatable="false">Mi5G Check</string>
 
+    <string name="onb_title_1">Check your phone</string>
+    <string name="onb_body_1">See hardware, display, cameras, battery and system details, and run simple hardware tests.</string>
+    <string name="onb_title_2">Private by design</string>
+    <string name="onb_body_2">The app has no internet access. Nothing leaves your phone unless you share a report yourself.</string>
+    <string name="onb_title_3">Permissions only when needed</string>
+    <string name="onb_body_3">Camera, microphone, location or notifications are requested only when you start a test that needs them. You can refuse and keep using the rest of the app.</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_next">Next</string>
+    <string name="onb_start">Start</string>
+    <string name="widget_description">Battery level, temperature and charging state</string>
+    <string name="widget_na">Not available</string>
+    <string name="widget_charging">Charging</string>
+    <string name="widget_not_charging">Not charging</string>
+    <string name="widget_health">Health %1$s</string>
 </resources>

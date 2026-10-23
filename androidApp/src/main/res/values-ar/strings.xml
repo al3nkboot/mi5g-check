@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">فاحص الجوال</string>
+    <string name="onb_title_1">افحص هاتفك</string>
+    <string name="onb_body_1">اعرض معلومات العتاد والشاشة والكاميرات والبطارية والنظام، وشغّل اختبارات بسيطة للعتاد.</string>
+    <string name="onb_title_2">خصوصيتك محفوظة</string>
+    <string name="onb_body_2">التطبيق لا يملك صلاحية الإنترنت. لا يخرج أي شيء من هاتفك إلا إذا شاركت تقريرًا بنفسك.</string>
+    <string name="onb_title_3">الصلاحيات عند الحاجة فقط</string>
+    <string name="onb_body_3">تُطلب صلاحيات الكاميرا أو الميكروفون أو الموقع أو الإشعارات فقط عند بدء اختبار يحتاجها. يمكنك الرفض ومتابعة استخدام بقية التطبيق.</string>
+    <string name="onb_skip">تخطٍّ</string>
+    <string name="onb_next">التالي</string>
+    <string name="onb_start">ابدأ</string>
+    <string name="widget_description">مستوى البطارية والحرارة وحالة الشحن</string>
+    <string name="widget_na">غير متاح</string>
+    <string name="widget_charging">يشحن</string>
+    <string name="widget_not_charging">لا يشحن</string>
+    <string name="widget_health">الصحة %1$s</string>
 </resources>

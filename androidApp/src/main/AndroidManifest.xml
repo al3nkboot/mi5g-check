@@ -68,6 +68,18 @@
                 tools:node="remove" />
         </provider>
 
+        <receiver
+            android:name="com.kgurgul.cpuinfo.BatteryWidget"
+            android:exported="false"
+            android:label="@string/widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_battery_info" />
+        </receiver>
+
         <activity
             android:name="com.kgurgul.cpuinfo.CrashActivity"
             android:exported="false"

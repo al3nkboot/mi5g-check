@@ -58,7 +58,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "ar-rEG-ldrtl-w411dp-h891dp-night-xxhdpi")
-class ArabicScreenshotTest {
+open class ArabicScreenshotTest {
 
     private val sampleSnapshot = BatterySnapshot(
         levelPercent = 80, health = Res.string.battery_good, state = Res.string.battery_discharging,
