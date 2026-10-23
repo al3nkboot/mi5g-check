@@ -24,6 +24,10 @@ import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Speed
 import com.kgurgul.cpuinfo.shared.perf_title
 import com.kgurgul.cpuinfo.shared.perf_hint
+import com.kgurgul.cpuinfo.shared.used_check
+import com.kgurgul.cpuinfo.shared.used_check_hint
+import com.kgurgul.cpuinfo.shared.used_check_step
+import androidx.compose.material.icons.automirrored.outlined.FactCheck
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.TextButton
@@ -223,19 +227,19 @@ private fun TestCard(test: HwTest, result: Boolean?, onClick: () -> Unit) {
 }
 
 @Composable
-private fun PerformanceCard(onClick: () -> Unit) {
+private fun ActionCard(icon: ImageVector, title: StringResource, hint: StringResource, onClick: () -> Unit) {
     ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(spacingMedium)) {
             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(44.dp)) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
             Spacer(Modifier.width(spacingMedium))
             Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(Res.string.perf_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    stringResource(Res.string.perf_hint),
+                    stringResource(hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -253,7 +257,7 @@ object TestSession {
 @Composable internal expect fun DeviceTest(test: HwTest, onResult: (Boolean) -> Unit)
 
 /** Full-screen report with share-as-image/PDF actions (platform rendering and sharing). */
-@Composable internal expect fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Unit)
+@Composable internal expect fun ReportView(results: Map<HwTest, Boolean>, usedPhone: Boolean, onClose: () -> Unit)
 
 @Composable
 fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
@@ -261,9 +265,12 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
     var run by remember { mutableStateOf<FullTestRun?>(null) }
     var showReport by remember { mutableStateOf(false) }
     var showPerf by remember { mutableStateOf(false) }
+    // Non-null during/after the «فحص جوال مستعمل» wizard: only this run's answers go into its report.
+    var usedResults by remember { mutableStateOf<Map<HwTest, Boolean>?>(null) }
     // Called when a test finishes (null = skipped/closed); during a full run moves to the next test.
     val finish = { test: HwTest, pass: Boolean? ->
         if (pass != null) TestSession.results[test] = pass
+        if (pass != null) usedResults = usedResults?.plus(test to pass)
         val r = run
         if (r != null) {
             r.advance(pass)
@@ -290,11 +297,17 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
                     passed = results.values.count { it },
                     total = HwTest.entries.size,
                     done = results.size,
-                    onFullTest = { run = FullTestRun().also { open = it.current } },
-                    onReport = { showReport = true },
+                    onFullTest = { usedResults = null; run = FullTestRun().also { open = it.current } },
+                    onReport = { usedResults = null; showReport = true },
                 )
             }
-            item { PerformanceCard(onClick = { showPerf = true }) }
+            item {
+                ActionCard(Icons.AutoMirrored.Outlined.FactCheck, Res.string.used_check, Res.string.used_check_hint) {
+                    usedResults = emptyMap()
+                    run = FullTestRun().also { open = it.current }
+                }
+            }
+            item { ActionCard(Icons.Outlined.Speed, Res.string.perf_title, Res.string.perf_hint) { showPerf = true } }
             items(HwTest.entries) { test ->
                 TestCard(test = test, result = results[test], onClick = { open = test })
             }
@@ -315,19 +328,17 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
             ),
         ) {
             Surface(modifier = Modifier.fillMaxSize()) {
-                Box {
-                    androidx.compose.runtime.key(test) {
-                        when (test) {
-                            HwTest.SCREEN -> ScreenTest(onResult)
-                            HwTest.TOUCH -> TouchTest(onResult, exitRequested)
-                            else -> DeviceTest(test, onResult)
+                // Wizard bar sits above the test (not over it) so it never hides the test's own text.
+                Column {
+                    run?.let { r -> WizardBar(r.index + 1, r.total, close) }
+                    Box(Modifier.weight(1f)) {
+                        androidx.compose.runtime.key(test) {
+                            when (test) {
+                                HwTest.SCREEN -> ScreenTest(onResult)
+                                HwTest.TOUCH -> TouchTest(onResult, exitRequested)
+                                else -> DeviceTest(test, onResult)
+                            }
                         }
-                    }
-                    if (run != null) {
-                        TextButton(
-                            onClick = close,
-                            modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding(),
-                        ) { Text(stringResource(Res.string.test_skip)) }
                     }
                 }
             }
@@ -348,8 +359,33 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
             onDismissRequest = { showReport = false },
             properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
-            Surface(modifier = Modifier.fillMaxSize()) { ReportView(results) { showReport = false } }
+            Surface(modifier = Modifier.fillMaxSize()) {
+                ReportView(usedResults ?: results, usedResults != null) { showReport = false }
+            }
         }
+    }
+}
+
+/** Step counter and skip action shown over each test during a guided run. */
+@Composable
+fun WizardBar(step: Int, total: Int, onSkip: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth().safeDrawingPadding().padding(horizontal = spacingSmall),
+    ) {
+        Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.secondaryContainer) {
+            Text(
+                "\u2068" + stringResource(Res.string.used_check_step, step, total) + "\u2069",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            )
+        }
+        Spacer(Modifier.weight(1f))
+        TextButton(
+            onClick = onSkip,
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+        ) { Text(stringResource(Res.string.test_skip)) }
     }
 }
 

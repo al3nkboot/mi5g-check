@@ -351,6 +351,14 @@
     <string name="report_share_image">مشاركة كصورة</string>
     <string name="report_share_pdf">مشاركة PDF</string>
     <string name="report_close">إغلاق</string>
+    <string name="used_check">فحص جوال مستعمل</string>
+    <string name="used_check_hint">خطوات موجّهة لفحص الجوال قبل شرائه</string>
+    <string name="used_check_step">الخطوة %1$d من %2$d</string>
+    <string name="used_report_title">تقرير فحص جوال مستعمل</string>
+    <string name="report_score">النتيجة العامة</string>
+    <string name="report_storage">التخزين</string>
+    <string name="report_storage_value">%1$s متاح من %2$s</string>
+    <string name="report_share_text">مشاركة كنص</string>
     <string name="report_footer">أُنشئ بواسطة Mi5G Check — على الجهاز، لا يُرفع أي شيء</string>
     <string name="report_summary">%1$d ناجح · %2$d فاشل · %3$d لم يُفحص</string>
     <string name="battery_from_system">من النظام</string>

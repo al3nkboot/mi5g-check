@@ -286,4 +286,40 @@ open class ArabicScreenshotTest {
         for (r in 0 until 14) for (c in 0 until 8) if (r < 9 || c < 3) grid.touch(c + 0.5f, r + 0.5f, 8f, 14f)
         TouchTest(onResult = {}, exitRequested = true, grid = grid)
     }
+
+    private val usedReport = com.kgurgul.cpuinfo.features.tests.TestReport.from(
+        mapOf(HwTest.SCREEN to true, HwTest.TOUCH to true, HwTest.SPEAKER to true, HwTest.MIC to true, HwTest.CAMERA to false, HwTest.SENSORS to true),
+        model = "Samsung SM-A546E", androidVersion = "14 (API 34)", batteryHealthPercent = 88, date = "23 أكتوبر 2026",
+    )
+
+    @Test
+    fun usedCheckStep() = snap("used-check-step") {
+        androidx.compose.foundation.layout.Column {
+            com.kgurgul.cpuinfo.features.tests.WizardBar(6, HwTest.entries.size, {})
+            com.kgurgul.cpuinfo.features.tests.SensorsContent(
+                listOf(com.kgurgul.cpuinfo.features.tests.SensorReading(Res.string.test_sensor_accelerometer, true, "0.12  9.79  0.31")),
+                onResult = {},
+            )
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "+h1500dp")
+    fun usedCheckReport() {
+        var plain = ""
+        snap("used-check-report") {
+            val base = com.kgurgul.cpuinfo.features.tests.rememberReportText(usedReport, "\u206688%\u2069 (تقديري) · جيدة")
+            // No cycle count (pre-Android 14 device) must show «غير متاح».
+            val text = com.kgurgul.cpuinfo.features.tests.usedPhoneReportText(base, usedReport, null, "41.2 GB" to "128 GB")
+            plain = com.kgurgul.cpuinfo.features.tests.reportPlainText(text)
+            com.kgurgul.cpuinfo.features.tests.ReportContent(text)
+            val bmp = com.kgurgul.cpuinfo.features.tests.renderReportBitmap(text, rtl = true, brand = 0xFF0B4F8A.toInt())
+            val dir = File(System.getProperty("screenshots.dir") ?: "build/screens").apply { mkdirs() }
+            File(dir, "used-check-report-share.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+        org.junit.Assert.assertEquals(83, usedReport.score) // 5 of 6 checked
+        listOf("تقرير فحص جوال مستعمل", "النتيجة العامة: 83% (5/6)", "عدد دورات الشحن: غير متاح", "تقديري", "41.2 GB متاح من 128 GB")
+            .forEach { org.junit.Assert.assertTrue(it, plain.contains(it)) }
+        org.junit.Assert.assertFalse(plain.contains("\u2066"))
+    }
 }

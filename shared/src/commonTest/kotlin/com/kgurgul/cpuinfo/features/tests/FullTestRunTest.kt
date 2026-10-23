@@ -34,6 +34,8 @@ class FullTestRunTest {
         assertEquals(1, report.failed)
         assertEquals(HwTest.entries.size - 3, report.notRun)
         assertNull(report.results.first { it.first == HwTest.MIC }.second)
+        assertEquals(66, report.score)
+        assertNull(TestReport.from(emptyMap(), "m", "14", null, "d").score)
     }
 
     @Test

@@ -5,6 +5,7 @@ class FullTestRun(private val tests: List<HwTest> = HwTest.entries) {
     var index: Int = 0
         private set
 
+    val total: Int get() = tests.size
     val current: HwTest? get() = tests.getOrNull(index)
     val isFinished: Boolean get() = index >= tests.size
 
@@ -27,6 +28,9 @@ data class TestReport(
     val passed: Int get() = results.count { it.second == true }
     val failed: Int get() = results.count { it.second == false }
     val notRun: Int get() = results.count { it.second == null }
+
+    /** Percent of checked tests that passed (skipped ones don't count); null when nothing was checked. */
+    val score: Int? get() = (passed + failed).takeIf { it > 0 }?.let { passed * 100 / it }
 
     companion object {
         fun from(

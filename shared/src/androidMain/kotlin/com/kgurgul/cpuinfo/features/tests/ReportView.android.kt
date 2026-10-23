@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PictureAsPdf
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
@@ -89,7 +90,7 @@ fun rememberReportText(report: TestReport, batteryHealth: String): ReportText {
 }
 
 @Composable
-internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Unit) {
+internal actual fun ReportView(results: Map<HwTest, Boolean>, usedPhone: Boolean, onClose: () -> Unit) {
     val context = LocalContext.current
     val locale = context.resources.configuration.locales[0]
     val snapshot = remember { BatteryHealthProvider(context.applicationContext).read() }
@@ -116,7 +117,7 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
     val bench = perf.bench
     val speed = perf.storage
     val approx = stringResource(Res.string.perf_approx)
-    val text = base.copy(
+    val full = base.copy(
         info = base.info + listOfNotNull(
             bench?.let {
                 stringResource(Res.string.report_cpu_score) to
@@ -128,6 +129,14 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
             },
         ),
     )
+    val storage = remember {
+        runCatching {
+            val st = android.os.StatFs(android.os.Environment.getDataDirectory().path)
+            android.text.format.Formatter.formatShortFileSize(context, st.availableBytes) to
+                android.text.format.Formatter.formatShortFileSize(context, st.totalBytes)
+        }.getOrNull()
+    }
+    val text = if (usedPhone) usedPhoneReportText(full, report, snapshot.cycleCount, storage) else full
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val brand = com.kgurgul.cpuinfo.ui.theme.md_theme_light_primary.toArgb()
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
@@ -136,9 +145,16 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
             TextButton(onClick = onClose, colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)) { Text(stringResource(Res.string.report_close)) }
         }
         ReportContent(text, Modifier.weight(1f))
+        TextButton(
+            onClick = { shareText(context, text) },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacingMedium),
+        ) {
+            Icon(Icons.Outlined.Share, contentDescription = null)
+            Text(" " + stringResource(Res.string.report_share_text))
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(spacingMedium),
-            modifier = Modifier.fillMaxWidth().padding(spacingMedium),
+            modifier = Modifier.fillMaxWidth().padding(start = spacingMedium, end = spacingMedium, bottom = spacingMedium),
         ) {
             Button(onClick = { shareReport(context, text, rtl, brand, pdf = false) }, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Outlined.Image, contentDescription = null)
@@ -150,6 +166,44 @@ internal actual fun ReportView(results: Map<HwTest, Boolean>, onClose: () -> Uni
             }
         }
     }
+}
+
+/** Adds the used-phone rows (score first, then cycles and storage); missing values read «غير متاح». */
+@Composable
+fun usedPhoneReportText(base: ReportText, report: TestReport, cycles: Int?, storage: Pair<String, String>?): ReportText {
+    val na = stringResource(Res.string.battery_not_available)
+    return base.copy(
+        title = stringResource(Res.string.used_report_title),
+        info = listOf(
+            stringResource(Res.string.report_score) to
+                (report.score?.let { ltr("$it% (${report.passed}/${report.passed + report.failed})") } ?: na),
+        ) + base.info + listOf(
+            stringResource(Res.string.battery_cycle_count) to (cycles?.let { ltr("$it") } ?: na),
+            stringResource(Res.string.report_storage) to
+                (storage?.let { (free, total) -> stringResource(Res.string.report_storage_value, ltr(free), ltr(total)) } ?: na),
+        ),
+    )
+}
+
+/** Plain-text form of the report for the share sheet (bidi isolates dropped: many chat apps show them as boxes). */
+fun reportPlainText(t: ReportText): String = buildString {
+    appendLine(t.title)
+    t.info.forEach { (k, v) -> appendLine("$k: $v") }
+    appendLine()
+    appendLine(t.resultsTitle)
+    appendLine(t.summary)
+    t.results.forEach { (name, value, _) -> appendLine("$name: $value") }
+    appendLine()
+    append(t.footer)
+}.replace(Regex("[\u2066-\u2069]"), "")
+
+private fun shareText(context: Context, t: ReportText) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, t.title)
+        putExtra(Intent.EXTRA_TEXT, reportPlainText(t))
+    }
+    runCatching { context.startActivity(Intent.createChooser(send, t.title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
 }
 
 @Composable
