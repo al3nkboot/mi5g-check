@@ -21,7 +21,7 @@ import android.widget.Toast
 class CrashActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val text = CrashLog.read(this)
+        val text = CrashLog.pendingReport(this)
         if (text == null) { openApp(); return }
         val pad = (16 * resources.displayMetrics.density).toInt()
         val root = LinearLayout(this).apply {

@@ -57,6 +57,17 @@
         android:theme="@style/AppThemeBase"
         tools:targetApi="tiramisu">
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
             android:name="com.kgurgul.cpuinfo.CrashActivity"
             android:exported="false"

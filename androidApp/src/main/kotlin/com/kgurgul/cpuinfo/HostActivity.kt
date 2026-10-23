@@ -52,7 +52,7 @@ class HostActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Show the last crash first, in a minimal separate screen, before any heavy UI composes.
-        if (savedInstanceState == null && CrashLog.file(this).exists()) {
+        if (savedInstanceState == null && (CrashLog.file(this).exists() || CrashLog.pendingExitReport(this) != null)) {
             super.onCreate(savedInstanceState)
             startActivity(android.content.Intent(this, CrashActivity::class.java))
             finish()

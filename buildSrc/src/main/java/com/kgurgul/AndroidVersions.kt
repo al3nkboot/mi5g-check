@@ -24,9 +24,9 @@ object AndroidVersions {
 
     private const val VERSION_MAJOR = 0
     private const val VERSION_MINOR = 7
-    private const val VERSION_PATCH = 2
+    private const val VERSION_PATCH = 3
 
-    const val VERSION_CODE = 12
+    const val VERSION_CODE = 13
     const val WEAR_VERSION_CODE =
         1000000 + VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH
     const val VERSION_NAME = "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH"

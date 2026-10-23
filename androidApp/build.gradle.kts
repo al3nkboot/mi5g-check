@@ -127,6 +127,7 @@ licenseReport {
 dependencies {
     implementation(projects.shared)
     implementation(libs.androidx.profileinstaller)
+    implementation("androidx.work:work-runtime:2.10.1")
 
     testImplementation(kotlin("test-junit"))
     testImplementation("org.robolectric:robolectric:4.16")

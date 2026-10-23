@@ -23,20 +23,34 @@ import com.kgurgul.cpuinfo.utils.AppLanguage
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
-class CpuInfoApp : Application() {
+class CpuInfoApp : Application(), androidx.work.Configuration.Provider {
+
+    // WorkManager auto-init is removed from the manifest; it initializes lazily on first use.
+    override val workManagerConfiguration: androidx.work.Configuration
+        get() = androidx.work.Configuration.Builder().build()
+
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(base)
+        // Earliest point in the process: catch crashes from providers/static init too.
+        runCatching { CrashLog.install(base) }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        CrashLog.install(this)
         // The crash viewer runs in its own process: skip all heavy init there.
         if (isCrashProcess()) return
-        startKoin {
-            androidContext(this@CpuInfoApp)
-            modules(androidModule, sharedModule)
+        try {
+            startKoin {
+                androidContext(this@CpuInfoApp)
+                modules(androidModule, sharedModule)
+            }
+            AppInitializerComponent().init(this)
+            AppLanguage.init(this)
+        } catch (t: Throwable) {
+            // Keep the process alive so the crash screen can show the cause on launch.
+            runCatching { CrashLog.write(CrashLog.file(this), CrashLog.format(this, "Application.onCreate", t)) }
         }
-        AppInitializerComponent().init(this)
-        AppLanguage.init(this)
-        com.kgurgul.cpuinfo.features.battery.BatteryStore.schedule(this)
+        runCatching { com.kgurgul.cpuinfo.features.battery.BatteryStore.schedule(this) }
     }
 
     private fun isCrashProcess(): Boolean = runCatching {
