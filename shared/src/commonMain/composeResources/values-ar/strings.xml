@@ -223,6 +223,8 @@
     <string name="sensors_magnetic_field">المجال المغناطيسي</string>
     <string name="sensors_attitude">الوضعية</string>
     <string name="settings_others">أخرى</string>
+    <string name="settings_support_paypal">دعم المطور عبر PayPal</string>
+    <string name="settings_support_paypal_desc">paypal.me/Midroid5G · لدعم استمرار تطوير التطبيق مجانًا وبدون إعلانات (@midroid5G)</string>
     <string name="settings_about">حول التطبيق</string>
     <string name="settings_about_credit">مبني على CPU Info من تطوير Kamil Gurgul (github.com/kamgurgul/cpu-info) بترخيص Apache-2.0، مع تعديلات: إعادة تسمية، ترجمة عربية، ودعم أندرويد فقط. أفكار تقدير سعة البطارية من aBattery لـ abanana84 (Apache-2.0).</string>
     <string name="licenses">التراخيص</string>

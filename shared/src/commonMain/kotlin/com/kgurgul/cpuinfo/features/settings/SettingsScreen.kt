@@ -81,6 +81,8 @@ import com.kgurgul.cpuinfo.shared.pref_theme_default
 import com.kgurgul.cpuinfo.shared.pref_theme_light
 import com.kgurgul.cpuinfo.shared.settings
 import com.kgurgul.cpuinfo.shared.settings_about
+import com.kgurgul.cpuinfo.shared.settings_support_paypal
+import com.kgurgul.cpuinfo.shared.settings_support_paypal_desc
 import com.kgurgul.cpuinfo.shared.pref_language
 import com.kgurgul.cpuinfo.shared.pref_language_arabic
 import com.kgurgul.cpuinfo.shared.pref_language_english
@@ -194,6 +196,15 @@ fun SettingsScreen(
                     }
                 }
             },
+            onSupportPayPalClicked = {
+                uriHandler.safeOpenUri(NavigationConst.PAYPAL_URL).onFailure {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = getString(Res.string.action_not_supported)
+                        )
+                    }
+                }
+            },
         )
         TemperatureUnitDialog(
             isDialogVisible = isTemperatureDialogVisible,
@@ -270,6 +281,7 @@ private fun SettingsList(
     onTemperatureItemClicked: () -> Unit,
     onLicensesClicked: () -> Unit,
     onAboutClicked: () -> Unit,
+    onSupportPayPalClicked: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -317,6 +329,14 @@ private fun SettingsList(
                 SettingsItem(
                     title = stringResource(Res.string.licenses),
                     onClick = onLicensesClicked,
+                )
+            }
+            item(key = "__supportPayPalItem") {
+                SettingsItem(
+                    title = stringResource(Res.string.settings_support_paypal),
+                    subtitle = stringResource(Res.string.settings_support_paypal_desc),
+                    onClick = onSupportPayPalClicked,
+                    icon = Res.drawable.ic_open_in_browser,
                 )
             }
             item(key = "__aboutItem") {

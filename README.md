@@ -6,6 +6,10 @@
 
 **افحص جوالك بالكامل — العتاد، صحة البطارية، والشاشة واللمس والسماعات والميكروفون والكاميرا — في تطبيق عربي واحد بدون إعلانات.**
 
+[![Latest Release](https://img.shields.io/github/v/release/al3nkboot/mi5g-check?label=Release&color=14998E)](https://github.com/al3nkboot/mi5g-check/releases/latest)
+[![PayPal Support](https://img.shields.io/badge/PayPal-Midroid5G-00457C?logo=paypal&logoColor=white)](https://paypal.me/Midroid5G)
+[![X @midroid5G](https://img.shields.io/badge/X-%40midroid5G-000000?logo=x&logoColor=white)](https://x.com/midroid5G)
+
 | البطارية | الفحوصات | العتاد | حول |
 |:---:|:---:|:---:|:---:|
 | <img src="docs/screenshots/battery.png" width="200" /> | <img src="docs/screenshots/tests.png" width="200" /> | <img src="docs/screenshots/hardware.png" width="200" /> | <img src="docs/screenshots/about.png" width="200" /> |
@@ -49,6 +53,13 @@
 ## الخصوصية
 
 التطبيق **لا يطلب إذن الإنترنت (`INTERNET`) أصلًا**، ولا يحتوي على أي مكتبات تتبع أو تحليلات أو إعلانات. كل المعلومات تُقرأ وتُعرض على جهازك فقط ولا تُرسل إلى أي مكان. (رابط «حول التطبيق» يفتح المتصفح فقط.)
+
+## 💙 دعم استمرارية تطوير التطبيق
+
+إذا أعجبك التطبيق واستفدت منه، يمكنك دعم المطور **أحمد الأسد (`@midroid5G`)** للمساهمة في استمرار تطوير التطبيق وتحديثه مجانًا وبدون إعلانات:
+
+- **PayPal:** [**paypal.me/Midroid5G**](https://paypal.me/Midroid5G) (`@Midroid5G`)
+- **حساب X (تويتر):** [**@midroid5G**](https://x.com/midroid5G)
 
 ## الشكر والترخيص
 
@@ -101,6 +112,13 @@ Get the latest APK from **[the latest release](https://github.com/al3nkboot/mi5g
 ## Privacy
 
 The app **does not request the `INTERNET` permission at all** and contains no tracking, analytics or ad libraries. Everything is read and shown on your device and never sent anywhere. (The About link just opens your browser.)
+
+## 💙 Support Development
+
+If you find **Mi5G Check** useful, you can support the developer **Ahmed ALASAD (`@midroid5G`)** to help keep the app free and ad-free:
+
+- **PayPal:** [**paypal.me/Midroid5G**](https://paypal.me/Midroid5G) (`@Midroid5G`)
+- **X (Twitter):** [**@midroid5G**](https://x.com/midroid5G)
 
 ## Credits & license
 
