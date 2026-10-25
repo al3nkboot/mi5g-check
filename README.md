@@ -56,7 +56,7 @@
 
 ## 💙 دعم استمرارية تطوير التطبيق
 
-إذا أعجبك التطبيق واستفدت منه، يمكنك دعم المطور **أحمد الأسد (`@midroid5G`)** للمساهمة في استمرار تطوير التطبيق وتحديثه مجانًا وبدون إعلانات:
+إذا أعجبك التطبيق واستفدت منه، يمكنك دعم المطور **`@midroid5G`** للمساهمة في استمرار تطوير التطبيق وتحديثه مجانًا وبدون إعلانات:
 
 - **PayPal:** [**paypal.me/Midroid5G**](https://paypal.me/Midroid5G) (`@Midroid5G`)
 - **حساب X (تويتر):** [**@midroid5G**](https://x.com/midroid5G)
@@ -115,7 +115,7 @@ The app **does not request the `INTERNET` permission at all** and contains no tr
 
 ## 💙 Support Development
 
-If you find **Mi5G Check** useful, you can support the developer **Ahmed ALASAD (`@midroid5G`)** to help keep the app free and ad-free:
+If you find **Mi5G Check** useful, you can support the developer **`@midroid5G`** to help keep the app free and ad-free:
 
 - **PayPal:** [**paypal.me/Midroid5G**](https://paypal.me/Midroid5G) (`@Midroid5G`)
 - **X (Twitter):** [**@midroid5G**](https://x.com/midroid5G)
