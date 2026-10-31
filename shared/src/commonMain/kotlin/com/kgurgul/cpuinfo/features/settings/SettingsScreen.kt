@@ -175,7 +175,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.settings)) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         var isTemperatureDialogVisible by remember { mutableStateOf(false) }
         var isThemeDialogVisible by remember { mutableStateOf(false) }

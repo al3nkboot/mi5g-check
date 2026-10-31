@@ -129,7 +129,7 @@ fun ProcessesScreen(
                 onSearchQueryChanged = onSearchQueryChanged,
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         CpuPullToRefreshBox(
             isRefreshing = uiState.isLoading,

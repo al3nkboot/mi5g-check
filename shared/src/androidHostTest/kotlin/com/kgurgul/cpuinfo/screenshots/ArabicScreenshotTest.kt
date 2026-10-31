@@ -5,12 +5,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.kgurgul.cpuinfo.domain.model.ItemValue
 import com.kgurgul.cpuinfo.features.battery.BatteryHealthScreen
 import com.kgurgul.cpuinfo.features.tests.HwTest
@@ -28,6 +41,9 @@ import com.kgurgul.cpuinfo.features.information.os.OsInfoScreen
 import com.kgurgul.cpuinfo.features.information.os.OsInfoViewModel
 import com.kgurgul.cpuinfo.features.information.ram.RamInfoScreen
 import com.kgurgul.cpuinfo.features.information.ram.RamInfoViewModel
+import com.kgurgul.cpuinfo.features.information.cpu.CpuInfoScreen
+import com.kgurgul.cpuinfo.features.information.cpu.CpuInfoViewModel
+import com.kgurgul.cpuinfo.domain.model.CpuData
 import com.kgurgul.cpuinfo.features.settings.SettingsScreen
 import com.kgurgul.cpuinfo.features.settings.SettingsViewModel
 import com.kgurgul.cpuinfo.shared.*
@@ -46,6 +62,7 @@ import com.kgurgul.cpuinfo.shared.model
 import com.kgurgul.cpuinfo.shared.manufacturer
 import com.kgurgul.cpuinfo.shared.os_security_patch
 import com.kgurgul.cpuinfo.ui.theme.CpuInfoTheme
+import com.kgurgul.cpuinfo.ui.components.CpuNavigationSuiteScaffold
 import java.io.File
 import kotlinx.collections.immutable.persistentListOf
 import org.junit.Rule
@@ -68,11 +85,14 @@ open class ArabicScreenshotTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    private fun snap(name: String, content: @Composable () -> Unit) {
+    private fun snap(name: String, fontScale: Float = 1f, content: @Composable () -> Unit) {
         composeRule.setContent { CpuInfoTheme(useDarkTheme = true) {
                 // Host-test manifest has no supportsRtl, so force RTL as the app does on device.
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                    Surface(color = MaterialTheme.colorScheme.background) { content() }
+                    val density = LocalDensity.current
+                    CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(density.density, fontScale)) {
+                        Surface(color = MaterialTheme.colorScheme.background) { content() }
+                    }
                 }
             } }
         composeRule.waitForIdle()
@@ -101,6 +121,72 @@ open class ArabicScreenshotTest {
                 ramData = RamData(8_000_000_000, 3_200_000_000, 40, 500_000_000, emptyList()),
             )
         )
+    }
+
+    @Test
+    fun cpu() = snap("cpu") {
+        CpuInfoScreen(
+            CpuInfoViewModel.UiState(
+                isInitializing = false,
+                cpuData = CpuData(
+                    cpuItems = emptyList(),
+                    frequencies = listOf(CpuData.Frequency(min = 0, max = 2_000_000_000, current = 1_100_000_000)),
+                ),
+            )
+        )
+    }
+
+    @Test
+    fun hostCpu() = snap("host-cpu") { HostShell("cpu") }
+
+    @Test
+    fun hostCpuFontScale13() = snap("host-cpu-font1.3", fontScale = 1.3f) { HostShell("cpu") }
+
+    @Test
+    fun hostTemperature() = snap("host-temperature") { HostShell("temperature") }
+
+    @Test
+    fun hostSettings() = snap("host-settings") { HostShell("settings") }
+
+    @Composable
+    private fun HostShell(destination: String) {
+        CpuNavigationSuiteScaffold(
+            navigationItems = {
+                listOf(
+                    "cpu" to "المعالج", "android" to "أندرويد", "processes" to "العمليات",
+                    "battery" to "البطارية", "temperature" to "الحرارة", "tests" to "الاختبارات",
+                    "settings" to "الإعدادات",
+                ).forEach { (key, label) ->
+                        NavigationSuiteItem(
+                            icon = { Text("●") },
+                            label = { Text(label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                            selected = key == destination,
+                            onClick = {},
+                            colors = com.kgurgul.cpuinfo.ui.components.CpuNavigationSuiteScaffoldDefault.itemColors(),
+                        )
+                    }
+            },
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)).padding(8.dp)) {
+                androidx.compose.material3.SecondaryScrollableTabRow(selectedTabIndex = 0) {
+                    listOf("المعالج", "معالج الرسوميات", "الذاكرة", "التخزين", "الشاشة", "أندرويد").forEachIndexed { index, title ->
+                        androidx.compose.material3.Tab(selected = index == 0, onClick = {}, text = { Text(title, maxLines = 1) })
+                    }
+                }
+                if (destination == "cpu") {
+                    CpuInfoScreen(
+                        CpuInfoViewModel.UiState(
+                            isInitializing = false,
+                            cpuData = CpuData(
+                                cpuItems = emptyList(),
+                                frequencies = listOf(CpuData.Frequency(0, 2_000_000_000, 1_100_000_000)),
+                            ),
+                        )
+                    )
+                } else Text(if (destination == "temperature") "درجات الحرارة" else "الإعدادات")
+            }
+        }
     }
 
     @Test

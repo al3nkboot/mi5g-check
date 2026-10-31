@@ -212,7 +212,7 @@ fun ApplicationsScreen(
                 onRefresh = onRefreshApplications,
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> CpuSnackbar(data) } },
     ) { innerPaddingModifier ->
         CpuPullToRefreshBox(

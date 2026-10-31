@@ -151,7 +151,7 @@ fun InfoContainerScreen(
                 },
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         InfoContainer(
             paddingValues = paddingValues,

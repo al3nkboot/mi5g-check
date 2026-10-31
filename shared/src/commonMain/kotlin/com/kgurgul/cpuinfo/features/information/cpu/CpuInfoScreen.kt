@@ -45,6 +45,7 @@ import com.kgurgul.cpuinfo.ui.components.VerticalScrollbar
 import com.kgurgul.cpuinfo.ui.theme.CpuInfoTheme
 import com.kgurgul.cpuinfo.ui.theme.spacingSmall
 import com.kgurgul.cpuinfo.utils.formatHz
+import com.kgurgul.cpuinfo.utils.ltr
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -102,7 +103,7 @@ fun FrequencyItem(index: Int, frequency: CpuData.Frequency) {
         }
     val minFreq =
         if (frequency.min != -1L) {
-            formatHz(0)
+            "0 MHz".ltr()
         } else {
             ""
         }

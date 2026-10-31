@@ -16,13 +16,16 @@
 package com.kgurgul.cpuinfo.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationItemColors
 import androidx.compose.material3.WideNavigationRailDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun CpuNavigationSuiteScaffold(
@@ -44,15 +47,23 @@ fun CpuNavigationSuiteScaffold(
             navigationRailContainerColor = MaterialTheme.colorScheme.primary,
             navigationRailContentColor = MaterialTheme.colorScheme.onPrimary,
         )
-    NavigationSuiteScaffold(
-        navigationItems = navigationItems,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        navigationSuiteColors = navigationSuitColors,
-        navigationItemVerticalArrangement = Arrangement.Center,
-        modifier = modifier,
-        content = content,
-    )
+    BoxWithConstraints(modifier = modifier) {
+        val suiteType = when {
+            maxWidth < 600.dp -> NavigationSuiteType.NavigationBar
+            maxWidth < 840.dp -> NavigationSuiteType.ShortNavigationBarMedium
+            else -> NavigationSuiteType.WideNavigationRailExpanded
+        }
+        NavigationSuiteScaffold(
+            navigationItems = navigationItems,
+            navigationSuiteType = suiteType,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationSuiteColors = navigationSuitColors,
+            navigationItemVerticalArrangement = Arrangement.Center,
+            modifier = Modifier,
+            content = content,
+        )
+    }
 }
 
 object CpuNavigationSuiteScaffoldDefault {

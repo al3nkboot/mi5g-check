@@ -150,7 +150,7 @@ fun BatteryHealthScreen(
     )
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.battery)) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         LazyColumn(
             contentPadding = PaddingValues(spacingMedium),

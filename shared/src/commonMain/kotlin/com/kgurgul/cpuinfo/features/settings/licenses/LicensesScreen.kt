@@ -100,7 +100,7 @@ fun LicensesScreen(uiState: LicensesViewModel.UiState, onNavigateBackClicked: ()
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         CpuPullToRefreshBox(
             isRefreshing = uiState.isLoading,

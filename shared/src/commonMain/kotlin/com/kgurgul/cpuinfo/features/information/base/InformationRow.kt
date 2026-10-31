@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import com.kgurgul.cpuinfo.ui.components.CpuDivider
 import com.kgurgul.cpuinfo.ui.components.ItemValueRow
 import com.kgurgul.cpuinfo.ui.theme.spacingSmall
+import com.kgurgul.cpuinfo.utils.ltr
 
 @Composable
 fun InformationRow(
@@ -38,7 +39,8 @@ fun InformationRow(
         }
     // 0.7.2: no LRM injection here (suspected launch crash inside SelectionContainer);
     // Text's default content-based direction already keeps Latin values LTR.
-    val nullableValue = value.ifEmpty { null }
+    val displayValue = if (value.any(Char::isDigit)) value.ltr() else value
+    val nullableValue = displayValue.ifEmpty { null }
     ItemValueRow(
         title = title,
         value = nullableValue,

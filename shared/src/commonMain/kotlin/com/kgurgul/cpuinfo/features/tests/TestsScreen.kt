@@ -285,7 +285,7 @@ fun TestsScreen(results: Map<HwTest, Boolean> = TestSession.results) {
     }
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.tests)) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         LazyColumn(
             contentPadding = PaddingValues(spacingMedium),

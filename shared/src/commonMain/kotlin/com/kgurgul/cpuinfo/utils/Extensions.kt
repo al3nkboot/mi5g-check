@@ -71,6 +71,9 @@ fun UriHandler.safeOpenUri(uri: String): Result<Unit> {
     return runCatching { openUri(uri) }
 }
 
+/** Isolate a Latin-script value inside surrounding RTL text. */
+fun String.ltr(): String = "\u2066$this\u2069"
+
 fun formatHz(valueHz: Long): String {
     if (valueHz < 0) return "-"
     val v = valueHz.toDouble()
@@ -79,5 +82,5 @@ fun formatHz(valueHz: Long): String {
         v >= 1_000_000 -> "${(v / 1_000_000).round2()} MHz"
         v >= 1_000 -> "${(v / 1_000).round2()} kHz"
         else -> "$valueHz Hz"
-    }
+    }.ltr()
 }

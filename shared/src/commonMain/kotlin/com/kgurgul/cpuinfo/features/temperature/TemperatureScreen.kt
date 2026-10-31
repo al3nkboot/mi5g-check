@@ -121,7 +121,7 @@ fun TemperatureScreen(uiState: TemperatureViewModel.UiState) {
     }
     Scaffold(
         topBar = { PrimaryTopAppBar(title = stringResource(Res.string.temperature)) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> CpuSnackbar(data) } },
     ) { paddingValues ->
         CpuPullToRefreshBox(
